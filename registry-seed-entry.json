@@ -9,25 +9,11 @@
   "version": "1.0.0",
   "packages": [
     {
-      "registryType": "git",
-      "identifier": "mcp-postgres",
+      "registryType": "npm",
+      "identifier": "@syedmajidraza/mcp-postgres",
       "version": "1.0.0",
       "transport": {
-        "type": "http",
-        "url": "http://127.0.0.1:3000"
-      },
-      "runtime": {
-        "type": "python",
-        "version": ">=3.8"
-      },
-      "installation": {
-        "steps": [
-          "git clone https://github.com/syedmajidraza/mcp-postgres.git",
-          "cd mcp-postgres",
-          "./install.sh",
-          "Configure database in ~/.postgres-mcp/mcp-server/.env",
-          "Install VS Code extension: postgres-mcp-copilot-1.0.0.vsix"
-        ]
+        "type": "stdio"
       }
     }
   ],
