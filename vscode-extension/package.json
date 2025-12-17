@@ -1,0 +1,141 @@
+{
+  "name": "postgres-mcp-copilot",
+  "displayName": "Syed PostgreSQL MCP for GitHub Copilot",
+  "description": "Connect GitHub Copilot to PostgreSQL databases through MCP server",
+  "version": "1.0.0",
+  "publisher": "syedraza",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Data Science"
+  ],
+  "keywords": [
+    "postgresql",
+    "database",
+    "mcp",
+    "copilot",
+    "sql"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "postgres-mcp.startServer",
+        "title": "PostgreSQL MCP: Start Server"
+      },
+      {
+        "command": "postgres-mcp.stopServer",
+        "title": "PostgreSQL MCP: Stop Server"
+      },
+      {
+        "command": "postgres-mcp.restartServer",
+        "title": "PostgreSQL MCP: Restart Server"
+      },
+      {
+        "command": "postgres-mcp.configure",
+        "title": "PostgreSQL MCP: Configure Database Connection"
+      },
+      {
+        "command": "postgres-mcp.showStatus",
+        "title": "PostgreSQL MCP: Show Server Status"
+      }
+    ],
+    "configuration": {
+      "title": "PostgreSQL MCP",
+      "properties": {
+        "postgresMcp.database.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "PostgreSQL database host"
+        },
+        "postgresMcp.database.port": {
+          "type": "number",
+          "default": 5431,
+          "description": "PostgreSQL database port"
+        },
+        "postgresMcp.database.name": {
+          "type": "string",
+          "default": "AdventureWorks",
+          "description": "PostgreSQL database name"
+        },
+        "postgresMcp.database.user": {
+          "type": "string",
+          "default": "postgres",
+          "description": "PostgreSQL database user"
+        },
+        "postgresMcp.database.password": {
+          "type": "string",
+          "default": "",
+          "description": "PostgreSQL database password (stored securely)"
+        },
+        "postgresMcp.server.port": {
+          "type": "number",
+          "default": 3000,
+          "description": "MCP server port"
+        },
+        "postgresMcp.server.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start MCP server when VS Code starts"
+        },
+        "postgresMcp.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Path to Python executable"
+        }
+      }
+    },
+    "chatParticipants": [
+      {
+        "id": "postgres-mcp.chatParticipant",
+        "name": "postgres",
+        "description": "Ask questions and execute commands on your PostgreSQL database",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "query",
+            "description": "Execute a SQL query on the database"
+          },
+          {
+            "name": "tables",
+            "description": "List all tables in the database"
+          },
+          {
+            "name": "describe",
+            "description": "Describe the structure of a table"
+          },
+          {
+            "name": "create",
+            "description": "Create a new table or stored procedure"
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}
