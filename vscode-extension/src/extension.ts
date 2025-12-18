@@ -234,8 +234,9 @@ async function handleChatRequest(
             // For non-command requests, determine if it's direct SQL or natural language
             // Direct SQL patterns - must be at the START of the prompt
             // Covers: SELECT, INSERT, UPDATE, DELETE, CREATE (table/index/view/procedure/function/schema/sequence/trigger),
-            //         ALTER, DROP, TRUNCATE, GRANT, REVOKE, BEGIN, COMMIT, ROLLBACK, EXPLAIN, WITH (CTEs)
-            const isDirectSQL = /^(select|insert|update|delete|create\s+(table|index|view|procedure|function|schema|sequence|trigger|type|extension|database)|alter|drop|truncate|grant|revoke|begin|commit|rollback|savepoint|explain|analyze|vacuum|with\s+\w+\s+as)\s+/i.test(lowerPrompt);
+            //         CREATE OR REPLACE (function/procedure/view/trigger), ALTER, DROP, TRUNCATE, GRANT, REVOKE,
+            //         BEGIN, COMMIT, ROLLBACK, EXPLAIN, WITH (CTEs)
+            const isDirectSQL = /^(select|insert|update|delete|create(\s+or\s+replace)?\s+(table|index|view|procedure|function|schema|sequence|trigger|type|extension|database)|alter|drop|truncate|grant|revoke|begin|commit|rollback|savepoint|explain|analyze|vacuum|with\s+\w+\s+as)\s+/i.test(lowerPrompt);
 
             if (isDirectSQL) {
                 // Execute as direct SQL
@@ -414,8 +415,25 @@ ${schemas.join('\n')}
 - Add appropriate JOINs if multiple tables are needed
 - Add LIMIT clauses for safety when selecting large datasets
 - Use aggregate functions (COUNT, AVG, MIN, MAX, SUM) when appropriate
-- For CREATE TABLE statements, include appropriate data types and constraints
-- For stored procedures/functions, use proper PL/pgSQL syntax with $$ delimiters
+
+**DDL Requirements:**
+- For CREATE TABLE: Include appropriate data types, PRIMARY KEY, FOREIGN KEY, and constraints (NOT NULL, UNIQUE, CHECK, DEFAULT)
+- For CREATE INDEX: Use appropriate index types (BTREE, HASH, GIN, GIST) and consider partial/conditional indexes
+- For stored procedures/functions:
+  * Use CREATE OR REPLACE FUNCTION/PROCEDURE for safer updates
+  * Use proper PL/pgSQL syntax with $$ delimiters or $BODY$ for function bodies
+  * Include parameter types and return types
+  * Add appropriate LANGUAGE plpgsql, RETURNS, and attributes (IMMUTABLE, STABLE, VOLATILE)
+  * Example: CREATE OR REPLACE FUNCTION func_name(param1 INT) RETURNS INT AS $$ BEGIN ... END; $$ LANGUAGE plpgsql;
+- For triggers: Include CREATE TRIGGER with timing (BEFORE/AFTER), events (INSERT/UPDATE/DELETE), and trigger function
+- For views: Use CREATE OR REPLACE VIEW for safer updates
+
+**Complex Query Support:**
+- Use CTEs (WITH clause) for complex multi-step queries
+- Use window functions (ROW_NUMBER(), RANK(), DENSE_RANK(), LAG(), LEAD()) when appropriate
+- Use subqueries and correlated subqueries when needed
+- Use CASE expressions for conditional logic
+- Use JSON/JSONB functions if working with JSON data
 
 **User Request:** ${naturalLanguageQuery}
 
@@ -611,19 +629,56 @@ async function handleAggregateRequest(prompt: string, baseUrl: string, stream: v
 }
 
 async function handleModificationRequest(prompt: string, baseUrl: string, stream: vscode.ChatResponseStream) {
-    stream.markdown('Executing SQL statement...\n');
+    const sql = extractSqlQuery(prompt);
+
+    stream.markdown(`Executing SQL statement:\n\`\`\`sql\n${sql}\n\`\`\`\n\n`);
 
     try {
-        const response = await axios.post(`${baseUrl}/mcp/v1/tools/call`, {
-            name: 'execute_sql',
-            arguments: { sql: prompt }
-        });
+        // Check if this is a multi-statement SQL (contains multiple semicolons outside of function/procedure bodies)
+        // For complex DDL with $$, treat as single statement
+        const hasDelimitedBody = sql.includes('$$') || sql.includes('$BODY$');
+        const statements = hasDelimitedBody ? [sql] : sql.split(';').map(s => s.trim()).filter(s => s.length > 0);
 
-        const result = response.data.result;
-        if (result.status === 'success') {
-            stream.markdown(`✅ ${result.message}`);
+        if (statements.length > 1) {
+            stream.markdown(`📋 Executing ${statements.length} statements...\n\n`);
+            let successCount = 0;
+
+            for (let i = 0; i < statements.length; i++) {
+                const stmt = statements[i];
+                try {
+                    const response = await axios.post(`${baseUrl}/mcp/v1/tools/call`, {
+                        name: 'execute_sql',
+                        arguments: { sql: stmt }
+                    });
+
+                    const result = response.data.result;
+                    if (result.status === 'success') {
+                        successCount++;
+                        stream.markdown(`✅ Statement ${i + 1}/${statements.length}: ${result.message}\n`);
+                    } else {
+                        stream.markdown(`❌ Statement ${i + 1}/${statements.length}: ${result.message}\n`);
+                        break; // Stop on first error
+                    }
+                } catch (error: any) {
+                    stream.markdown(`❌ Statement ${i + 1}/${statements.length} failed: ${error.response?.data?.detail || error.message}\n`);
+                    break; // Stop on first error
+                }
+            }
+
+            stream.markdown(`\n**Summary:** ${successCount}/${statements.length} statements executed successfully\n`);
         } else {
-            stream.markdown(`❌ ${result.message}`);
+            // Single statement
+            const response = await axios.post(`${baseUrl}/mcp/v1/tools/call`, {
+                name: 'execute_sql',
+                arguments: { sql: sql }
+            });
+
+            const result = response.data.result;
+            if (result.status === 'success') {
+                stream.markdown(`✅ ${result.message}`);
+            } else {
+                stream.markdown(`❌ ${result.message}`);
+            }
         }
     } catch (error: any) {
         stream.markdown(`\n❌ Failed: ${error.response?.data?.detail || error.message}`);

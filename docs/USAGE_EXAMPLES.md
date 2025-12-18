@@ -1,5 +1,17 @@
 # PostgreSQL MCP - Complete Usage Examples
 
+## 📖 Documentation Index
+
+- **[DDL_EXAMPLES.md](DDL_EXAMPLES.md)** - Comprehensive database development guide:
+  - Creating tables with constraints and foreign keys
+  - Creating indexes (B-tree, GIN, partial, unique)
+  - Creating stored procedures with transaction handling
+  - Creating functions (scalar, table-returning, JSON)
+  - Creating triggers (audit, validation, timestamp)
+  - Creating views and materialized views
+  - Complex SQL queries (CTEs, window functions, recursive queries)
+  - Natural language examples for all operations
+
 ## ✅ Server Status Check
 
 **Check if MCP server is running:**
@@ -95,7 +107,7 @@ Columns (5):
 ```
 @postgres How many employees are there?
 @postgres count employees
-@postgres How many suppliers do we have?
+c
 @postgres How many employees in Engineering department?
 ```
 

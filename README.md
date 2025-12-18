@@ -30,7 +30,7 @@ nano ~/.postgres-mcp/mcp-server/.env
 # Open Copilot Chat: @postgres show tables
 ```
 
-📖 **Detailed Guide:** [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md)
+📖 **Detailed Guide:** [Developer Quick Start](docs/DEVELOPER_QUICK_START.md)
 
 ---
 
@@ -41,6 +41,7 @@ nano ~/.postgres-mcp/mcp-server/.env
 - 🎛️ **VS Code Extension** - Start/stop/status controls with status bar integration
 - 🧠 **Schema-Aware** - LLM knows your actual table and column names
 - 📊 **Complex Queries** - Handles JOINs, subqueries, aggregations, and analytics
+- 🛠️ **Database Development** - Create tables, indexes, procedures, functions, triggers, and views
 - 🛡️ **Transparent & Safe** - Shows generated SQL before execution
 - 🌐 **Cross-Platform** - macOS, Linux, and Windows support
 
@@ -51,27 +52,46 @@ nano ~/.postgres-mcp/mcp-server/.env
 ### **Getting Started**
 | Document | Description |
 |----------|-------------|
-| [🚀 Developer Quick Start](DEVELOPER_QUICK_START.md) | 30-second installation and first query |
-| [💡 Usage Examples](USAGE_EXAMPLES.md) | Complete query examples for all features |
-| [🧪 Testing Guide](TESTING_GUIDE.md) | Comprehensive testing instructions |
+| [🚀 Developer Quick Start](docs/DEVELOPER_QUICK_START.md) | 30-second installation and first query |
+| [💡 Usage Examples](docs/USAGE_EXAMPLES.md) | Complete query examples for all features |
+| [📘 Quick Reference](docs/QUICK_REFERENCE.md) | Everything you need to know in one page |
+| [🧪 Testing Guide](docs/TESTING_GUIDE.md) | Comprehensive testing instructions |
+
+### **Database Development**
+| Document | Description |
+|----------|-------------|
+| [🗂️ DDL Examples](docs/DDL_EXAMPLES.md) | 40+ examples: tables, indexes, procedures, functions, triggers, views |
+| [⚡ Database Development Guide](docs/DATABASE_DEVELOPMENT_IMPROVEMENTS.md) | Technical enhancements for production DDL operations |
 
 ### **Technical Documentation**
 | Document | Description |
 |----------|-------------|
-| [🏗️ Architecture](LLM_ENHANCED_GUIDE.md) | How LLM integration works with GitHub Copilot |
-| [📋 Implementation Summary](IMPLEMENTATION_SUMMARY.md) | Complete implementation overview |
-| [📁 Folder Structure](FOLDER_STRUCTURE.md) | Project organization and automated workflows |
+| [🏗️ Architecture](docs/LLM_ENHANCED_GUIDE.md) | How LLM integration works with GitHub Copilot |
+| [📋 Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md) | Complete implementation overview |
+| [🔧 MCP Protocol Guide](docs/MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) | MCP protocol implementation & LLM integration |
+| [📁 Folder Structure](docs/FOLDER_STRUCTURE.md) | Project organization and automated workflows |
+| [🎯 Model Selection](docs/MODEL_SELECTION_ANALYSIS.md) | GitHub Copilot model selection and preferences |
 
 ### **Distribution & Publishing**
 | Document | Description |
 |----------|-------------|
-| [📦 Distribution Guide](DISTRIBUTION_GUIDE.md) | Share with your team (network/web/git) |
-| [🌐 Registry Publishing](REGISTRY_PUBLISHING_GUIDE.md) | Publish to internal MCP registry |
+| [📦 Distribution Guide](docs/DISTRIBUTION_GUIDE.md) | Share with your team (network/web/git) |
+| [🌐 Registry Publishing](docs/REGISTRY_PUBLISHING_GUIDE.md) | Publish to internal MCP registry |
+| [🔄 Quick Update Instructions](docs/QUICK_UPDATE_INSTRUCTIONS.md) | How to quickly update the package |
+
+### **Additional Resources**
+| Document | Description |
+|----------|-------------|
+| [🤝 Contributing](docs/CONTRIBUTING.md) | Contribution guidelines |
+| [🐛 Bug Fixes & Improvements](docs/BUGFIX_NATURAL_LANGUAGE_ROUTING.md) | Natural language routing fixes |
+| [🔍 SQL Detection Analysis](docs/SQL_DETECTION_ANALYSIS.md) | Complete SQL statement detection coverage |
+| [✅ SQL Detection Tests](docs/SQL_DETECTION_TEST_CASES.md) | Test cases for SQL detection |
 
 ---
 
 ## 🎯 Example Queries
 
+### Natural Language Queries
 ```
 @postgres what's the minimum salary of employees?
 @postgres show employees earning more than average salary
@@ -82,7 +102,31 @@ nano ~/.postgres-mcp/mcp-server/.env
 @postgres analyze the query plan for my slow query
 ```
 
-📚 **More Examples:** [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)
+### Direct SQL
+```sql
+-- Just type SQL directly - it's detected automatically
+SELECT * FROM employees WHERE salary > 70000
+
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) CHECK (price >= 0)
+)
+
+CREATE OR REPLACE FUNCTION calculate_bonus(emp_id INTEGER)
+RETURNS DECIMAL(10,2)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN (SELECT salary * 0.10 FROM employees WHERE id = emp_id);
+END;
+$$
+```
+
+📚 **More Examples:**
+- [Usage Examples](docs/USAGE_EXAMPLES.md) - Basic query examples
+- [DDL Examples](docs/DDL_EXAMPLES.md) - 40+ database development examples
+- [Quick Reference](docs/QUICK_REFERENCE.md) - Comprehensive quick reference
 
 ---
 
@@ -113,7 +157,7 @@ nano ~/.postgres-mcp/mcp-server/.env
         └────────────────────────┘
 ```
 
-📖 **Detailed Architecture:** [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md)
+📖 **Detailed Architecture:** [LLM Enhanced Guide](docs/LLM_ENHANCED_GUIDE.md)
 
 ---
 
@@ -136,7 +180,7 @@ nano ~/.postgres-mcp/mcp-server/.env
 - Contains: MCP server, extension, docs, installers
 - **Output:** `postgres-mcp-v1.0.0.tar.gz`
 
-📁 **Full Structure:** [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md)
+📁 **Full Structure:** [Folder Structure](docs/FOLDER_STRUCTURE.md)
 
 ---
 
@@ -181,7 +225,7 @@ cd postgres-mcp-package
 3. **Reload VS Code:**
    - `Cmd+Shift+P` → "Developer: Reload Window"
 
-📖 **Complete Guide:** [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md)
+📖 **Complete Guide:** [Developer Quick Start](docs/DEVELOPER_QUICK_START.md)
 
 ---
 
@@ -222,6 +266,25 @@ Use `@postgres` in GitHub Copilot Chat to ask database questions in natural lang
 
 ---
 
+## 🗂️ Database Development Capabilities
+
+Your PostgreSQL MCP extension is **production-ready** for professional database development:
+
+### ✅ What You Can Create
+
+- **Tables** - With all constraint types (PK, FK, CHECK, UNIQUE, DEFAULT)
+- **Indexes** - All types (B-tree, GIN, GIST, HASH, partial, unique, composite)
+- **Stored Procedures** - With transaction handling and error handling
+- **Functions** - Scalar, table-returning, JSON, all attributes
+- **Triggers** - BEFORE/AFTER, all events, validation, audit
+- **Views** - Regular and materialized views
+- **Complex Queries** - CTEs, window functions, recursive queries, subqueries
+
+📖 **Complete Guide:** [DDL Examples](docs/DDL_EXAMPLES.md) - 40+ examples
+📖 **Technical Details:** [Database Development Guide](docs/DATABASE_DEVELOPMENT_IMPROVEMENTS.md)
+
+---
+
 ## 🧪 Testing
 
 ### **Test MCP Server**
@@ -241,7 +304,7 @@ curl http://127.0.0.1:3000/health
 # Type: @postgres show tables
 ```
 
-📖 **Complete Testing Guide:** [TESTING_GUIDE.md](TESTING_GUIDE.md)
+📖 **Complete Testing Guide:** [Testing Guide](docs/TESTING_GUIDE.md)
 
 ---
 
@@ -260,7 +323,7 @@ curl http://127.0.0.1:3000/health
 User Question → Schema Fetch → LLM Generation → SQL Display → Execution → Results
 ```
 
-📖 **Technical Details:** [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md)
+📖 **Technical Details:** [LLM Enhanced Guide](docs/LLM_ENHANCED_GUIDE.md)
 
 ---
 
@@ -294,8 +357,8 @@ User Question → Schema Fetch → LLM Generation → SQL Display → Execution 
 - Internal npm registry
 - Internal MCP registry
 
-📦 **Distribution Guide:** [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md)  
-🌐 **Registry Publishing:** [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md)
+📦 **Distribution Guide:** [Distribution Guide](docs/DISTRIBUTION_GUIDE.md)
+🌐 **Registry Publishing:** [Registry Publishing Guide](docs/REGISTRY_PUBLISHING_GUIDE.md)
 
 ---
 
@@ -320,7 +383,7 @@ cd ..
 # ✅ Done! Package updated with all changes
 ```
 
-📁 **Detailed Workflow:** [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md#making-changes--updates)
+📁 **Detailed Workflow:** [Folder Structure - Making Changes](docs/FOLDER_STRUCTURE.md#making-changes--updates)
 
 ---
 
@@ -365,7 +428,7 @@ SERVER_PORT=3000
 - Check server is running: `curl http://127.0.0.1:3000/health`
 - Restart VS Code
 
-📖 **Complete Troubleshooting:** [TESTING_GUIDE.md](TESTING_GUIDE.md#troubleshooting)
+📖 **Complete Troubleshooting:** [Testing Guide - Troubleshooting](docs/TESTING_GUIDE.md#troubleshooting)
 
 ---
 
@@ -376,10 +439,12 @@ Contributions are welcome! Please:
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
-4. Test thoroughly (see [TESTING_GUIDE.md](TESTING_GUIDE.md))
+4. Test thoroughly (see [Testing Guide](docs/TESTING_GUIDE.md))
 5. Commit: `git commit -m "Add amazing feature"`
 6. Push: `git push origin feature/amazing-feature`
 7. Open a Pull Request
+
+📖 **Contributing Guidelines:** [Contributing](docs/CONTRIBUTING.md)
 
 ---
 
@@ -392,44 +457,66 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🙏 Support
 
 - **Issues:** [GitHub Issues](https://github.com/syedmajidraza/mcp-postgres/issues)
-- **Documentation:** See links above
+- **Documentation:** See documentation links above
 - **Questions:** Open a GitHub Discussion
 
 ---
 
-## 📚 Additional Resources
+## 📚 All Documentation
 
-### **All Documentation Files:**
+### **Quick Access**
+- [Quick Reference Guide](docs/QUICK_REFERENCE.md) - Everything in one page
+- [DDL Examples](docs/DDL_EXAMPLES.md) - 40+ database development examples
+- [Usage Examples](docs/USAGE_EXAMPLES.md) - Basic query examples
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture details
-- [BUGFIX_NATURAL_LANGUAGE_ROUTING.md](BUGFIX_NATURAL_LANGUAGE_ROUTING.md) - Natural language query routing fix
-- [COMPREHENSIVE_SQL_DETECTION_UPDATE.md](COMPREHENSIVE_SQL_DETECTION_UPDATE.md) - SQL detection coverage enhancement
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
-- [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md) - Quick installation
-- [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md) - Team distribution
-- [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) - Project organization
-- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Implementation details
-- [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md) - LLM integration guide
-- [LOCAL_REGISTRY_SETUP.md](LOCAL_REGISTRY_SETUP.md) - Local registry setup guide
-- [MCP_FASTAPI_IMPLEMENTATION_GUIDE.md](MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) - **MCP protocol implementation & GitHub Copilot LLM integration**
-- [MODEL_SELECTION_ANALYSIS.md](MODEL_SELECTION_ANALYSIS.md) - GitHub Copilot model selection and user preference
-- [QUICK_UPDATE_INSTRUCTIONS.md](QUICK_UPDATE_INSTRUCTIONS.md) - Quick update guide
-- [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md) - Registry publishing
-- [SQL_DETECTION_ANALYSIS.md](SQL_DETECTION_ANALYSIS.md) - Complete SQL statement analysis
-- [SQL_DETECTION_TEST_CASES.md](SQL_DETECTION_TEST_CASES.md) - SQL detection test cases
-- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide
-- [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) - Query examples
+### **Getting Started**
+- [Developer Quick Start](docs/DEVELOPER_QUICK_START.md)
+- [Quick Start](docs/QUICK_START.md)
+- [Testing Guide](docs/TESTING_GUIDE.md)
+
+### **Architecture & Implementation**
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [LLM Enhanced Guide](docs/LLM_ENHANCED_GUIDE.md)
+- [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)
+- [MCP FastAPI Implementation](docs/MCP_FASTAPI_IMPLEMENTATION_GUIDE.md)
+- [Folder Structure](docs/FOLDER_STRUCTURE.md)
+
+### **Database Development**
+- [DDL Examples](docs/DDL_EXAMPLES.md)
+- [Database Development Improvements](docs/DATABASE_DEVELOPMENT_IMPROVEMENTS.md)
+
+### **Technical Guides**
+- [Model Selection Analysis](docs/MODEL_SELECTION_ANALYSIS.md)
+- [SQL Detection Analysis](docs/SQL_DETECTION_ANALYSIS.md)
+- [SQL Detection Test Cases](docs/SQL_DETECTION_TEST_CASES.md)
+- [Comprehensive SQL Detection Update](docs/COMPREHENSIVE_SQL_DETECTION_UPDATE.md)
+
+### **Distribution & Updates**
+- [Distribution Guide](docs/DISTRIBUTION_GUIDE.md)
+- [Registry Publishing Guide](docs/REGISTRY_PUBLISHING_GUIDE.md)
+- [Quick Update Instructions](docs/QUICK_UPDATE_INSTRUCTIONS.md)
+- [Local Registry Setup](docs/LOCAL_REGISTRY_SETUP.md)
+
+### **Bug Fixes & Improvements**
+- [Bugfix: Natural Language Routing](docs/BUGFIX_NATURAL_LANGUAGE_ROUTING.md)
+
+### **Reference**
+- [Project Summary](docs/PROJECT_SUMMARY.md)
+- [Structure Overview](docs/STRUCTURE.md)
+- [Index](docs/INDEX.md)
+- [Examples](docs/EXAMPLES.md)
 
 ---
 
 ## 🎉 Summary
 
 **What you get:**
-- ✅ Natural language SQL queries
+- ✅ Natural language SQL queries powered by GitHub Copilot
 - ✅ 8 comprehensive database tools
 - ✅ VS Code extension with server management
-- ✅ GitHub Copilot LLM integration
+- ✅ Production-ready database development (tables, indexes, procedures, functions, triggers, views)
 - ✅ Schema-aware SQL generation
+- ✅ Complex query support (CTEs, window functions, recursive queries)
 - ✅ Cross-platform support
 - ✅ Complete documentation
 - ✅ Easy distribution to your team
