@@ -411,6 +411,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Implementation details
 - [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md) - LLM integration guide
 - [LOCAL_REGISTRY_SETUP.md](LOCAL_REGISTRY_SETUP.md) - Local registry setup guide
+- [MCP_FASTAPI_IMPLEMENTATION_GUIDE.md](MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) - **MCP protocol implementation & GitHub Copilot LLM integration**
 - [QUICK_UPDATE_INSTRUCTIONS.md](QUICK_UPDATE_INSTRUCTIONS.md) - Quick update guide
 - [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md) - Registry publishing
 - [SQL_DETECTION_ANALYSIS.md](SQL_DETECTION_ANALYSIS.md) - Complete SQL statement analysis
