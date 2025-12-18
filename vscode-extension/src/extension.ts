@@ -219,28 +219,34 @@ async function handleChatRequest(
 
     try {
         const userPrompt = request.prompt;
-        const lowerPrompt = userPrompt.toLowerCase();
+        const lowerPrompt = userPrompt.toLowerCase().trim();
 
-        // Parse the request and determine the appropriate tool to call
-        if (request.command === 'query' || lowerPrompt.includes('select ')) {
+        // Handle slash commands explicitly
+        if (request.command === 'query') {
             await handleQueryRequest(userPrompt, baseUrl, stream);
-        } else if (request.command === 'tables' ||
-                   lowerPrompt.includes('list tables') ||
-                   lowerPrompt.includes('show tables') ||
-                   lowerPrompt.includes('all tables') ||
-                   lowerPrompt.includes('get tables') ||
-                   lowerPrompt.includes('give me tables') ||
-                   lowerPrompt.includes('display tables')) {
+        } else if (request.command === 'tables') {
             await handleListTablesRequest(baseUrl, stream);
-        } else if (request.command === 'describe' ||
-                   lowerPrompt.includes('describe table') ||
-                   lowerPrompt.includes('describe the')) {
+        } else if (request.command === 'describe') {
             await handleDescribeTableRequest(userPrompt, baseUrl, stream);
         } else if (request.command === 'create') {
             await handleCreateRequest(userPrompt, baseUrl, stream);
         } else {
-            // Use AI to determine the best action
-            await handleGeneralRequest(userPrompt, baseUrl, stream);
+            // For non-command requests, determine if it's direct SQL or natural language
+            // Direct SQL patterns - must be at the START of the prompt
+            const isDirectSQL = /^(select|insert|update|delete|create\s+(table|index|view|procedure|function)|alter|drop)\s+/i.test(lowerPrompt);
+
+            if (isDirectSQL) {
+                // Execute as direct SQL
+                const sqlLower = lowerPrompt;
+                if (sqlLower.startsWith('select')) {
+                    await handleQueryRequest(userPrompt, baseUrl, stream);
+                } else {
+                    await handleModificationRequest(userPrompt, baseUrl, stream);
+                }
+            } else {
+                // Use LLM for natural language queries
+                await handleGeneralRequest(userPrompt, baseUrl, stream);
+            }
         }
 
     } catch (error: any) {
@@ -450,21 +456,6 @@ ${schemas.join('\n')}
 }
 
 async function handleGeneralRequest(prompt: string, baseUrl: string, stream: vscode.ChatResponseStream) {
-    const lowerPrompt = prompt.toLowerCase();
-
-    // Check if user is providing direct SQL
-    if (lowerPrompt.startsWith('select ') ||
-        lowerPrompt.startsWith('insert ') ||
-        lowerPrompt.startsWith('update ') ||
-        lowerPrompt.startsWith('delete ') ||
-        lowerPrompt.startsWith('create ') ||
-        lowerPrompt.startsWith('alter ') ||
-        lowerPrompt.startsWith('drop ')) {
-        // Direct SQL - execute as-is
-        await handleQueryRequest(prompt, baseUrl, stream);
-        return;
-    }
-
     try {
         // Use LLM to generate SQL from natural language
         stream.markdown('🤖 Analyzing your request and generating SQL...\n\n');
@@ -472,6 +463,7 @@ async function handleGeneralRequest(prompt: string, baseUrl: string, stream: vsc
         const sqlQuery = await generateSQLWithLLM(prompt, baseUrl);
 
         stream.markdown(`**Generated SQL:**\n\`\`\`sql\n${sqlQuery}\n\`\`\`\n\n`);
+        outputChannel.appendLine(`[LLM Generated SQL]: ${sqlQuery}`);
 
         // Determine if it's a query or modification
         const sqlLower = sqlQuery.toLowerCase().trim();
@@ -510,6 +502,7 @@ async function handleGeneralRequest(prompt: string, baseUrl: string, stream: vsc
 
     } catch (error: any) {
         stream.markdown(`\n❌ Error: ${error.message}\n\n`);
+        outputChannel.appendLine(`[LLM Error]: ${error.message}`);
         stream.markdown(`💡 **Tip:** Try rephrasing your question or provide a direct SQL query.\n\n`);
         stream.markdown(`**Examples:**\n`);
         stream.markdown(`- "How many employees earn more than 70000?"\n`);

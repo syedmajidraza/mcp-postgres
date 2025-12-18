@@ -402,12 +402,14 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ### **All Documentation Files:**
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture details
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines  
+- [BUGFIX_NATURAL_LANGUAGE_ROUTING.md](BUGFIX_NATURAL_LANGUAGE_ROUTING.md) - Natural language query routing fix
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md) - Quick installation
 - [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md) - Team distribution
 - [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) - Project organization
 - [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Implementation details
 - [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md) - LLM integration guide
+- [LOCAL_REGISTRY_SETUP.md](LOCAL_REGISTRY_SETUP.md) - Local registry setup guide
 - [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md) - Registry publishing
 - [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide
 - [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) - Query examples
