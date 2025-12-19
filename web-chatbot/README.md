@@ -4,8 +4,11 @@
 
 A floating chat widget that connects to your PostgreSQL database through the MCP server and uses GitHub Copilot (via VS Code extension) for natural language SQL generation.
 
-![Popup Chatbot Preview](../docs/images/popup-chatbot-screenshot.png)
-*The popup chat widget showing query results with MCP connection status*
+<p align="center">
+  <img src="../docs/images/popup-chatbot-screenshot.png" alt="Popup Chatbot Preview" width="700">
+  <br>
+  <em>The popup chat widget showing query results with MCP connection status</em>
+</p>
 
 ## ✨ New Features (v2.0)
 - 🎈 **Popup Chat Widget** - Non-intrusive floating button that opens chat on demand
