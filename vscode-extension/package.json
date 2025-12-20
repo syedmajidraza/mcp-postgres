@@ -87,6 +87,21 @@
           "type": "string",
           "default": "python3",
           "description": "Path to Python executable"
+        },
+        "postgresMcp.inline.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline completions with MCP context for SQL files"
+        },
+        "postgresMcp.inline.triggerOnKeywords": {
+          "type": "boolean",
+          "default": true,
+          "description": "Trigger inline completions when typing SQL keywords (CREATE, SELECT, INSERT, etc.)"
+        },
+        "postgresMcp.inline.includeSchemaContext": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include database schema context in inline completion suggestions"
         }
       }
     },

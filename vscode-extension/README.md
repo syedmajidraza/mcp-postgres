@@ -8,11 +8,21 @@ This extension allows developers to interact with PostgreSQL databases directly 
 
 ## Features
 
+### Chat Mode
 - **GitHub Copilot Integration**: Use `@postgres` in Copilot chat to query databases
 - **Automatic Server Management**: Starts and manages the MCP server automatically
 - **Database Configuration**: Easy setup through VS Code settings or command palette
 - **Real-time Status**: Status bar indicator shows server status
 - **Multiple Database Operations**: Query, create tables, stored procedures, and more
+
+### Inline Mode (NEW!)
+- **Context-Aware Completions**: Get intelligent SQL suggestions while typing
+- **Schema Integration**: Completions use your actual database schema (tables, columns, types)
+- **Stored Procedure Support**: Auto-complete function definitions with PL/pgSQL syntax
+- **Smart Triggers**: Automatically triggers on SQL keywords (CREATE, SELECT, INSERT, etc.)
+- **Performance Optimized**: Schema caching for fast, responsive suggestions
+
+👉 **[Quick Start Guide for Inline Mode](./INLINE_MODE_QUICKSTART.md)**
 
 ## Installation
 
@@ -121,7 +131,41 @@ The server can start automatically (if `autoStart` is enabled) or manually:
 
 ## Usage
 
-### Using with GitHub Copilot Chat
+### Two Modes of Operation
+
+This extension offers two powerful ways to work with your PostgreSQL database:
+
+1. **Chat Mode**: Use `@postgres` in GitHub Copilot Chat for interactive queries and commands
+2. **Inline Mode**: Get real-time, context-aware SQL completions while editing `.sql` files
+
+### Inline Mode - Quick Example
+
+When editing a `.sql` file with the MCP server running:
+
+```sql
+CREATE FUNCTION get_employee_salary(
+-- Press Tab here to get auto-completion with parameters and function body
+```
+
+The extension will suggest:
+```sql
+emp_id INT
+) RETURNS DECIMAL AS $$
+BEGIN
+    RETURN (SELECT salary FROM employees WHERE employee_id = emp_id);
+END;
+$$ LANGUAGE plpgsql;
+```
+
+**Key Features:**
+- Suggestions include your actual table and column names
+- Automatically formats PL/pgSQL syntax
+- Works for CREATE TABLE, SELECT, INSERT, and more
+- Press Tab to accept, Esc to dismiss
+
+📖 **[Read the Full Inline Mode Guide](./INLINE_MODE_GUIDE.md)**
+
+### Chat Mode - Using with GitHub Copilot Chat
 
 Once configured, use the `@postgres` participant in GitHub Copilot chat:
 
@@ -245,6 +289,20 @@ Displays detailed server status and connection information.
   - Description: Path to Python executable
   - Default: `python3`
   - Note: Change this if Python is installed in a custom location
+
+#### Inline Mode Settings
+
+- **postgresMcp.inline.enabled**
+  - Description: Enable inline completions with MCP context for SQL files
+  - Default: `true`
+
+- **postgresMcp.inline.triggerOnKeywords**
+  - Description: Trigger inline completions when typing SQL keywords
+  - Default: `true`
+
+- **postgresMcp.inline.includeSchemaContext**
+  - Description: Include database schema context in inline completion suggestions
+  - Default: `true`
 
 ## Status Bar
 
@@ -473,6 +531,14 @@ A: The extension requires GitHub Copilot for the chat interface. However, you ca
 A: No. Everything runs locally. Your database credentials and data never leave your machine.
 
 ## Changelog
+
+### Version 1.1.0 (Current)
+- **NEW**: Inline completion mode with MCP context
+- **NEW**: Context-aware SQL suggestions while typing
+- **NEW**: Schema caching for improved performance
+- **NEW**: Smart triggers for CREATE, SELECT, INSERT, and more
+- **NEW**: Stored procedure and function auto-completion
+- Improved documentation with inline mode guides
 
 ### Version 1.0.0
 - Initial release

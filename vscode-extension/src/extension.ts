@@ -10,6 +10,21 @@ let outputChannel: vscode.OutputChannel;
 let statusBarItem: vscode.StatusBarItem;
 let copilotProxyServer: http.Server | null = null;
 
+// Cache for database schema to improve inline completion performance
+interface SchemaCache {
+    tables: string[];
+    tableSchemas: Map<string, any[]>;
+    functions: string[];
+    lastUpdated: number;
+}
+
+let schemaCache: SchemaCache = {
+    tables: [],
+    tableSchemas: new Map(),
+    functions: [],
+    lastUpdated: 0
+};
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('PostgreSQL MCP extension is now active');
 
@@ -37,6 +52,18 @@ export function activate(context: vscode.ExtensionContext) {
     participant.iconPath = vscode.Uri.file(path.join(context.extensionPath, 'resources', 'postgres-icon.png'));
     context.subscriptions.push(participant);
 
+    // Register inline completion provider for SQL files
+    const inlineCompletionProvider = vscode.languages.registerInlineCompletionItemProvider(
+        [
+            { language: 'sql', scheme: 'file' },
+            { language: 'plsql', scheme: 'file' },
+            { language: 'postgres', scheme: 'file' },
+            { pattern: '**/*.sql' }
+        ],
+        new PostgreSQLInlineCompletionProvider()
+    );
+    context.subscriptions.push(inlineCompletionProvider);
+
     // Auto-start server if configured
     const config = vscode.workspace.getConfiguration('postgresMcp');
     if (config.get('server.autoStart')) {
@@ -45,6 +72,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Start Copilot API proxy server for web chatbot
     startCopilotProxyServer();
+
+    // Initialize schema cache on startup
+    setTimeout(() => refreshSchemaCache(), 5000);
 }
 
 // Copilot API Proxy Server for Web Chatbot
@@ -961,6 +991,316 @@ function formatAsTable(rows: any[]): string {
     }
 
     return table;
+}
+
+// Inline Completion Provider for SQL with MCP Context
+class PostgreSQLInlineCompletionProvider implements vscode.InlineCompletionItemProvider {
+    async provideInlineCompletionItems(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        context: vscode.InlineCompletionContext,
+        token: vscode.CancellationToken
+    ): Promise<vscode.InlineCompletionItem[] | vscode.InlineCompletionList | undefined> {
+
+        const config = vscode.workspace.getConfiguration('postgresMcp');
+
+        // Check if inline completions are enabled
+        if (!config.get('inline.enabled', true)) {
+            return undefined;
+        }
+
+        // Check if MCP server is running
+        const serverPort = config.get('server.port', 3000);
+        const isRunning = await checkServerHealth(serverPort);
+        if (!isRunning) {
+            return undefined;
+        }
+
+        const line = document.lineAt(position.line);
+        const textBeforeCursor = document.getText(new vscode.Range(
+            new vscode.Position(0, 0),
+            position
+        ));
+
+        // Trigger patterns for inline completions
+        const triggers = {
+            createFunction: /CREATE\s+(OR\s+REPLACE\s+)?FUNCTION\s+(\w+)\s*\(/i,
+            createProcedure: /CREATE\s+(OR\s+REPLACE\s+)?PROCEDURE\s+(\w+)\s*\(/i,
+            createTable: /CREATE\s+TABLE\s+(\w+)\s*\(/i,
+            selectFrom: /SELECT\s+.*\s+FROM\s+$/i,
+            insertInto: /INSERT\s+INTO\s+(\w+)\s*\(/i,
+            updateTable: /UPDATE\s+(\w+)\s+SET\s+$/i,
+            joinTable: /\s+JOIN\s+$/i,
+            whereClause: /WHERE\s+$/i,
+        };
+
+        try {
+            // Detect what kind of SQL statement is being written
+            if (triggers.createFunction.test(textBeforeCursor) || triggers.createProcedure.test(textBeforeCursor)) {
+                return await this.provideFunctionCompletion(document, position, textBeforeCursor);
+            } else if (triggers.createTable.test(textBeforeCursor)) {
+                return await this.provideTableCompletion(document, position, textBeforeCursor);
+            } else if (triggers.selectFrom.test(line.text)) {
+                return await this.provideTableSuggestions(document, position);
+            } else if (triggers.insertInto.test(line.text)) {
+                return await this.provideColumnSuggestions(document, position, line.text);
+            } else if (triggers.joinTable.test(line.text)) {
+                return await this.provideTableSuggestions(document, position);
+            }
+
+            return undefined;
+        } catch (error) {
+            outputChannel.appendLine(`[Inline Completion Error]: ${error}`);
+            return undefined;
+        }
+    }
+
+    private async provideFunctionCompletion(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        textBeforeCursor: string
+    ): Promise<vscode.InlineCompletionItem[]> {
+        try {
+            // Refresh schema cache if needed
+            await refreshSchemaCacheIfNeeded();
+
+            // Extract function name
+            const match = textBeforeCursor.match(/(?:FUNCTION|PROCEDURE)\s+(\w+)/i);
+            const functionName = match ? match[1] : 'new_function';
+
+            // Get schema context for better suggestions
+            const schemaContext = this.buildSchemaContext();
+
+            // Use Copilot to generate function body with schema context
+            const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
+            if (models.length === 0) {
+                return [];
+            }
+
+            const model = models[0];
+
+            const prompt = `You are a PostgreSQL expert. Complete the following stored procedure/function definition using PL/pgSQL syntax.
+
+**Database Schema Context:**
+${schemaContext}
+
+**Current Code:**
+${textBeforeCursor}
+
+**Instructions:**
+- Complete the function parameters and body
+- Use proper PL/pgSQL syntax with BEGIN...END blocks
+- Include appropriate RETURNS clause
+- Use LANGUAGE plpgsql
+- Include proper error handling where appropriate
+- Reference available tables from the schema
+- Return ONLY the completion text (parameters and body), not the entire function
+- Do not include markdown formatting
+
+**Completion:**`;
+
+            const messages = [vscode.LanguageModelChatMessage.User(prompt)];
+            const chatResponse = await model.sendRequest(messages, {});
+
+            let completion = '';
+            for await (const fragment of chatResponse.text) {
+                completion += fragment;
+            }
+
+            // Clean up the completion
+            completion = completion
+                .trim()
+                .replace(/^```sql\s*/i, '')
+                .replace(/^```\s*/i, '')
+                .replace(/\s*```$/i, '')
+                .trim();
+
+            if (completion) {
+                return [new vscode.InlineCompletionItem(completion)];
+            }
+
+            return [];
+        } catch (error) {
+            outputChannel.appendLine(`[Function Completion Error]: ${error}`);
+            return [];
+        }
+    }
+
+    private async provideTableCompletion(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        textBeforeCursor: string
+    ): Promise<vscode.InlineCompletionItem[]> {
+        try {
+            await refreshSchemaCacheIfNeeded();
+
+            const schemaContext = this.buildSchemaContext();
+
+            // Use Copilot to suggest table structure
+            const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
+            if (models.length === 0) {
+                return [];
+            }
+
+            const model = models[0];
+
+            const prompt = `You are a PostgreSQL expert. Complete the following CREATE TABLE statement.
+
+**Database Schema Context:**
+${schemaContext}
+
+**Current Code:**
+${textBeforeCursor}
+
+**Instructions:**
+- Complete the column definitions with appropriate data types
+- Include PRIMARY KEY, FOREIGN KEY, and other constraints
+- Use PostgreSQL data types (INTEGER, VARCHAR, TIMESTAMP, etc.)
+- Add indexes if appropriate
+- Reference other tables if needed with FOREIGN KEY constraints
+- Return ONLY the completion (column definitions and constraints), not the entire CREATE TABLE
+- Do not include markdown formatting
+
+**Completion:**`;
+
+            const messages = [vscode.LanguageModelChatMessage.User(prompt)];
+            const chatResponse = await model.sendRequest(messages, {});
+
+            let completion = '';
+            for await (const fragment of chatResponse.text) {
+                completion += fragment;
+            }
+
+            completion = completion
+                .trim()
+                .replace(/^```sql\s*/i, '')
+                .replace(/^```\s*/i, '')
+                .replace(/\s*```$/i, '')
+                .trim();
+
+            if (completion) {
+                return [new vscode.InlineCompletionItem(completion)];
+            }
+
+            return [];
+        } catch (error) {
+            outputChannel.appendLine(`[Table Completion Error]: ${error}`);
+            return [];
+        }
+    }
+
+    private async provideTableSuggestions(
+        document: vscode.TextDocument,
+        position: vscode.Position
+    ): Promise<vscode.InlineCompletionItem[]> {
+        await refreshSchemaCacheIfNeeded();
+
+        if (schemaCache.tables.length === 0) {
+            return [];
+        }
+
+        // Suggest first table name
+        const suggestion = schemaCache.tables[0];
+        return [new vscode.InlineCompletionItem(suggestion)];
+    }
+
+    private async provideColumnSuggestions(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        lineText: string
+    ): Promise<vscode.InlineCompletionItem[]> {
+        await refreshSchemaCacheIfNeeded();
+
+        // Extract table name from INSERT INTO statement
+        const match = lineText.match(/INSERT\s+INTO\s+(\w+)/i);
+        if (!match) {
+            return [];
+        }
+
+        const tableName = match[1];
+        const columns = schemaCache.tableSchemas.get(tableName);
+
+        if (!columns || columns.length === 0) {
+            return [];
+        }
+
+        // Suggest all column names
+        const columnNames = columns.map(c => c.column_name).join(', ');
+        return [new vscode.InlineCompletionItem(columnNames + ') VALUES (')];
+    }
+
+    private buildSchemaContext(): string {
+        const tables = schemaCache.tables.slice(0, 10); // Limit to 10 tables
+        const schemaLines: string[] = ['Available Tables:'];
+
+        for (const table of tables) {
+            const columns = schemaCache.tableSchemas.get(table);
+            if (columns) {
+                const columnDefs = columns
+                    .slice(0, 5) // Limit to 5 columns per table
+                    .map(c => `  ${c.column_name} ${c.data_type}`)
+                    .join('\n');
+                schemaLines.push(`\n${table}:\n${columnDefs}`);
+            } else {
+                schemaLines.push(`\n${table}`);
+            }
+        }
+
+        return schemaLines.join('\n');
+    }
+}
+
+// Refresh schema cache from MCP server
+async function refreshSchemaCache(): Promise<void> {
+    const config = vscode.workspace.getConfiguration('postgresMcp');
+    const serverPort = config.get('server.port', 3000);
+    const baseUrl = `http://127.0.0.1:${serverPort}`;
+
+    try {
+        // Check if server is running
+        const isRunning = await checkServerHealth(serverPort);
+        if (!isRunning) {
+            return;
+        }
+
+        // Get list of tables
+        const tablesResponse = await axios.post(`${baseUrl}/mcp/v1/tools/call`, {
+            name: 'list_tables',
+            arguments: { schema: 'public' }
+        }, { timeout: 5000 });
+
+        const tables = tablesResponse.data.result.tables.map((t: any) => t.table_name);
+        schemaCache.tables = tables;
+
+        // Get schema for each table (limit to avoid slowdown)
+        for (const table of tables.slice(0, 20)) {
+            try {
+                const schemaResponse = await axios.post(`${baseUrl}/mcp/v1/tools/call`, {
+                    name: 'describe_table',
+                    arguments: { table_name: table }
+                }, { timeout: 3000 });
+
+                schemaCache.tableSchemas.set(table, schemaResponse.data.result.columns);
+            } catch (err) {
+                // Skip tables that fail
+                outputChannel.appendLine(`[Schema Cache] Failed to cache table ${table}: ${err}`);
+            }
+        }
+
+        schemaCache.lastUpdated = Date.now();
+        outputChannel.appendLine(`[Schema Cache] Cached ${tables.length} tables`);
+
+    } catch (error) {
+        outputChannel.appendLine(`[Schema Cache] Failed to refresh: ${error}`);
+    }
+}
+
+// Refresh schema cache if it's older than 5 minutes
+async function refreshSchemaCacheIfNeeded(): Promise<void> {
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    if (Date.now() - schemaCache.lastUpdated > CACHE_TTL) {
+        await refreshSchemaCache();
+    }
 }
 
 export function deactivate() {

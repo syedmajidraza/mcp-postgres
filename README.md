@@ -36,16 +36,25 @@ nano ~/.postgres-mcp/mcp-server/.env
 
 ## ✨ Features
 
+### Core Features
 - 🤖 **Natural Language to SQL** - Ask questions in plain English, powered by GitHub Copilot LLM
 - 🔧 **8 PostgreSQL Tools** - Complete database operations via MCP protocol
 - 🎛️ **VS Code Extension** - Start/stop/status controls with status bar integration
-- 🌐 **Web Chatbot (NEW!)** - Popup chat widget for users without VS Code - [See Demo](web-chatbot/README.md)
+- 🌐 **Web Chatbot** - Popup chat widget for users without VS Code - [See Demo](web-chatbot/README.md)
 - 🧠 **Schema-Aware** - LLM knows your actual table and column names
 - 📊 **Complex Queries** - Handles JOINs, subqueries, aggregations, and analytics
 - 🛠️ **Database Development** - Create tables, indexes, procedures, functions, triggers, and views
 - 🛡️ **Transparent & Safe** - Shows generated SQL before execution
 - 🔌 **MCP Connection Status** - Real-time display of database connection info
 - 🎨 **Cross-Platform** - macOS, Linux, and Windows support
+
+### NEW! Inline Mode 🎉
+- ⚡ **Context-Aware Completions** - Get intelligent SQL suggestions while typing
+- 📝 **Schema Integration** - Auto-complete with your actual database schema
+- 🔧 **Stored Procedure Support** - Generate PL/pgSQL functions and procedures
+- 🎯 **Smart Triggers** - Automatic detection of SQL keywords (CREATE, SELECT, INSERT, etc.)
+- ⚙️ **Performance Optimized** - Schema caching for fast, responsive suggestions
+- 📖 **[Quick Start Guide](vscode-extension/INLINE_MODE_QUICKSTART.md)**
 
 ---
 
@@ -58,6 +67,14 @@ nano ~/.postgres-mcp/mcp-server/.env
 | [💡 Usage Examples](docs/USAGE_EXAMPLES.md) | Complete query examples for all features |
 | [📘 Quick Reference](docs/QUICK_REFERENCE.md) | Everything you need to know in one page |
 | [🧪 Testing Guide](docs/TESTING_GUIDE.md) | Comprehensive testing instructions |
+
+### **Inline Mode (NEW!)**
+| Document | Description |
+|----------|-------------|
+| [⚡ Inline Mode Quick Start](vscode-extension/INLINE_MODE_QUICKSTART.md) | Get started with inline completions in 30 seconds |
+| [📖 Inline Mode Guide](vscode-extension/INLINE_MODE_GUIDE.md) | Complete guide to inline mode features |
+| [📋 Inline Mode Cheat Sheet](vscode-extension/INLINE_MODE_CHEATSHEET.md) | Quick reference card for inline completions |
+| [🏗️ Inline Mode Architecture](vscode-extension/ARCHITECTURE_INLINE_MODE.md) | Technical architecture and implementation details |
 
 ### **Database Development**
 | Document | Description |
@@ -183,7 +200,10 @@ $$
 ### **2. VS Code Extension** (`vscode-extension/`)
 - **Technology:** TypeScript, VS Code Extension API
 - **Integration:** GitHub Copilot via `vscode.lm` API
-- **Features:** Chat participant `@postgres`, server management
+- **Features:**
+  - Chat participant `@postgres` for natural language queries
+  - Inline completion provider with schema context
+  - Server management and status monitoring
 - **Docs:** [vscode-extension/README.md](vscode-extension/README.md)
 
 ### **3. Distribution Package** (`postgres-mcp-package/`)
@@ -242,6 +262,24 @@ cd postgres-mcp-package
 
 ## 🎛️ VS Code Extension Features
 
+### **Two Modes of Operation**
+
+#### 1. Chat Mode
+Use `@postgres` in GitHub Copilot Chat to ask database questions in natural language:
+- Execute queries and view results
+- Create tables, procedures, and functions
+- Get schema information
+- Analyze query plans
+
+#### 2. Inline Mode (NEW!)
+Get real-time, context-aware SQL completions while editing `.sql` files:
+- Type `CREATE FUNCTION my_function(` and press Tab
+- Auto-complete with parameters and function body
+- Uses your actual database schema for suggestions
+- Works for CREATE TABLE, SELECT, INSERT, and more
+
+📖 **[Inline Mode Quick Start](vscode-extension/INLINE_MODE_QUICKSTART.md)**
+
 ### **Commands** (Access via `Cmd+Shift+P` / `Ctrl+Shift+P`)
 
 - `PostgreSQL MCP: Start Server` - Start the MCP server
@@ -255,10 +293,6 @@ cd postgres-mcp-package
 - 🟢 **PostgreSQL MCP: Running** - Server active, DB connected
 - 🟡 **PostgreSQL MCP: Stopped** - Server not running
 - 🔴 **PostgreSQL MCP: Error** - Server error (click for details)
-
-### **Chat Participant**
-
-Use `@postgres` in GitHub Copilot Chat to ask database questions in natural language.
 
 ---
 
@@ -415,10 +449,16 @@ SERVER_PORT=3000
 
 ### **VS Code Extension Settings**
 
+#### Database & Server Settings
 - `postgresMcp.database.*` - Database connection settings
 - `postgresMcp.server.port` - MCP server port (default: 3000)
 - `postgresMcp.server.autoStart` - Auto-start on VS Code launch
 - `postgresMcp.pythonPath` - Path to Python executable
+
+#### Inline Mode Settings (NEW!)
+- `postgresMcp.inline.enabled` - Enable inline completions (default: true)
+- `postgresMcp.inline.triggerOnKeywords` - Trigger on SQL keywords (default: true)
+- `postgresMcp.inline.includeSchemaContext` - Include database schema (default: true)
 
 ---
 
@@ -523,6 +563,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 **What you get:**
 - ✅ Natural language SQL queries powered by GitHub Copilot
+- ✅ Inline code completions with database schema context (NEW!)
 - ✅ 8 comprehensive database tools
 - ✅ VS Code extension with server management
 - ✅ Production-ready database development (tables, indexes, procedures, functions, triggers, views)
