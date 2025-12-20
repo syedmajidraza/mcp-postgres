@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     autoResizeTextarea();
     updateMCPStatus();
+    updateProviderDisplay();
     // Update MCP status every 30 seconds
     setInterval(updateMCPStatus, 30000);
 });
@@ -51,6 +52,22 @@ async function updateMCPStatus() {
     }
 }
 
+// Update provider display based on session
+async function updateProviderDisplay() {
+    const subtitleEl = document.getElementById('providerSubtitle');
+    const provider = sessionStorage.getItem('selectedProvider');
+
+    if (!subtitleEl) return;
+
+    if (provider === 'github') {
+        subtitleEl.textContent = '✨ Powered by GitHub Copilot';
+    } else if (provider === 'azure') {
+        subtitleEl.textContent = '☁️ Powered by Azure OpenAI / MS Teams';
+    } else {
+        subtitleEl.textContent = 'Powered by AI';
+    }
+}
+
 // Check authentication
 async function checkAuth() {
     try {
@@ -69,16 +86,18 @@ async function checkAuth() {
     }
 }
 
-// Show login screen
+// Show login screen (DISABLED - using radio button provider selection)
 function showLoginScreen() {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('chatInterface').style.display = 'none';
+    // Authentication disabled - just show chat interface
+    showChatInterface();
 }
 
 // Show chat interface
 function showChatInterface() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('chatInterface').style.display = 'flex';
+    const chatInterface = document.getElementById('chatInterface');
+    if (chatInterface) {
+        chatInterface.style.display = 'flex';
+    }
 }
 
 // Login
@@ -394,6 +413,14 @@ async function checkStatus() {
 // Close modal
 function closeModal() {
     document.getElementById('statusModal').style.display = 'none';
+}
+
+// Change provider
+function changeProvider() {
+    if (confirm('Change AI provider? This will clear your current chat session.')) {
+        sessionStorage.removeItem('selectedProvider');
+        window.location.href = '/auth/logout';
+    }
 }
 
 // Auto-resize textarea
