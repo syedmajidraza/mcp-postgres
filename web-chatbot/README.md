@@ -113,7 +113,7 @@ Select your AI provider (GitHub Copilot or ChatGPT) and start chatting!
 
 - 🔒 **Shown as disabled option**
 - Requires Azure OpenAI resource and API key
-- See [AZURE_OPENAI_SETUP.md](AZURE_OPENAI_SETUP.md) for setup instructions
+- See [docs/AZURE_OPENAI_SETUP.md](docs/AZURE_OPENAI_SETUP.md) for setup instructions
 - Note: MS Teams Copilot has no public API - use Azure OpenAI instead
 
 ---
@@ -341,6 +341,30 @@ web-chatbot/
 - Non-technical users who need database access
 - Quick database queries via web browser
 - Demonstrating database capabilities
+
+---
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [docs/](docs/) folder:
+
+### **Setup & Configuration**
+- [AZURE_OPENAI_SETUP.md](docs/AZURE_OPENAI_SETUP.md) - Azure OpenAI setup guide (enterprise option)
+- [CHANGELOG.md](docs/CHANGELOG.md) - Version history and changes
+
+### **Architecture & Technical**
+- [TECHNICAL_ARCHITECTURE_EXPLAINED.md](docs/TECHNICAL_ARCHITECTURE_EXPLAINED.md) - In-depth technical architecture explanation
+  - Why GitHub Copilot works without API key (localhost proxy)
+  - Why Azure OpenAI requires API key (cloud service)
+  - Authentication flows and security models
+  - Perfect for team briefings and technical discussions
+- [FINAL_STATE.md](docs/FINAL_STATE.md) - Production-ready state documentation
+
+### **Migration & Guides**
+- [UPGRADE_GUIDE.md](docs/UPGRADE_GUIDE.md) - Migration guide for upgrades
+- [POPUP_CHATBOT_CHANGES.md](docs/POPUP_CHATBOT_CHANGES.md) - Popup chatbot feature details
+- [SCREENSHOT_GUIDE.md](docs/SCREENSHOT_GUIDE.md) - Visual guide and screenshots
+- [CLEANUP_SUMMARY.md](docs/CLEANUP_SUMMARY.md) - Codebase cleanup summary
 
 ---
 
