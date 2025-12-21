@@ -3,7 +3,7 @@ FastAPI-based MCP Server for PostgreSQL
 Provides tools for database operations through the Model Context Protocol
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
@@ -12,6 +12,7 @@ import json
 import uvicorn
 from contextlib import asynccontextmanager
 from config import Config
+import logging
 
 # Configuration
 class DatabaseConfig(BaseModel):
@@ -34,6 +35,10 @@ class ToolCallRequest(BaseModel):
 # Database connection pool
 db_pool: Optional[asyncpg.Pool] = None
 db_config = DatabaseConfig()
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("MCPServer")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -62,6 +67,14 @@ async def lifespan(app: FastAPI):
         print("Database connection pool closed")
 
 app = FastAPI(title="PostgreSQL MCP Server", lifespan=lifespan)
+
+# Middleware to log incoming requests in debug mode
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(f"Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    return response
 
 # MCP Protocol Endpoints
 
@@ -216,6 +229,9 @@ async def call_tool(request: ToolCallRequest):
         raise HTTPException(status_code=500, detail="Database connection not available")
 
     try:
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Tool call: {request.name} with arguments {request.arguments}")
+
         if request.name == "query_database":
             result = await execute_query(request.arguments.get("query"))
             return {"result": result}
