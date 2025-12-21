@@ -1,55 +1,67 @@
-# Images Directory
+# Documentation Images
 
-This directory contains screenshots and visual assets for the PostgreSQL MCP project documentation.
+This folder contains diagrams and screenshots for the PostgreSQL MCP project documentation.
 
-## Required Screenshot
+## Files
 
-### Popup Chatbot Screenshot
+### **provider-llm.png**
+- **Description**: AI Provider Architecture Diagram
+- **Size**: 1200x800px (255KB)
+- **Format**: PNG (converted from SVG)
+- **Shows**: Complete architecture showing all 3 AI provider options
+  - ✅ GitHub Copilot (active, via VS Code proxy)
+  - 🔒 Azure OpenAI (disabled, requires setup)
+  - 🤖 ChatGPT (active, requires API key)
+- **Used in**:
+  - `/web-chatbot/README.md`
+  - `/web-chatbot/FINAL_STATE.md`
 
-**File**: `popup-chatbot-screenshot.png`
+### **provider-llm-diagram.svg**
+- **Description**: Source SVG for provider-llm.png
+- **Size**: 1200x800px (9KB)
+- **Format**: SVG (vector graphics)
+- **Purpose**: Editable source file for the architecture diagram
 
-**Description**: Screenshot showing the web chatbot popup widget with:
-- Floating chat button in bottom-right corner
-- Popup window displaying chat interface
-- MCP connection status banner
-- Example query with SQL and results
-- Connection info (database name, host, port)
-
-**How to Create**:
-1. Start all services (VS Code extension, MCP server, Web chatbot)
-2. Open browser to `http://localhost:8080`
-3. Click the floating chat button to open popup
-4. Send a query (e.g., "Show all tables")
-5. Wait for results to display
-6. Take screenshot showing the complete popup with results
-7. Save as `popup-chatbot-screenshot.png` in this directory
-
-**Dimensions**: Should capture the popup (420x600px) plus some surrounding context
-
-**Current Status**:
-- ⚠️ Screenshot needs to be added to this directory
-- Referenced in: `web-chatbot/README.md` (line 7)
-- Referenced in: `web-chatbot/SCREENSHOT_GUIDE.md`
-
-## Screenshot Guidelines
-
-When adding screenshots:
-- Use PNG format for crisp quality
-- Include enough context to show feature clearly
-- Avoid showing sensitive data (passwords, real customer data, etc.)
-- Keep file sizes reasonable (compress if needed)
-- Use descriptive filenames
-
-## Additional Screenshots (Optional)
-
-Consider adding:
-- `chatbot-closed.png` - Just the floating button
-- `chatbot-disconnected.png` - Showing disconnected status
-- `chatbot-complex-query.png` - JOIN query with multiple tables
-- `status-modal.png` - Detailed system status view
-- `vscode-extension.png` - VS Code extension in action
-- `mcp-server-running.png` - MCP server console output
+### **popup-chatbot-screenshot.png**
+- **Description**: Web Chatbot Interface Screenshot
+- **Size**: 98KB
+- **Format**: PNG
+- **Shows**: Main chat interface with provider selection
+- **Used in**: `/web-chatbot/README.md`
 
 ---
 
-**Note**: The popup chatbot screenshot from the user's message should be saved here as `popup-chatbot-screenshot.png` for proper documentation linking.
+## Updating Diagrams
+
+### To Update provider-llm.png:
+
+1. Edit the SVG source file:
+   ```bash
+   # Edit provider-llm-diagram.svg with any SVG editor
+   ```
+
+2. Convert to PNG:
+   ```bash
+   cd /Users/syedraza/postgres-mcp/docs/images
+   qlmanage -t -s 2400 -o . provider-llm-diagram.svg
+   mv provider-llm-diagram.svg.png provider-llm.png
+   ```
+
+3. Commit both files:
+   ```bash
+   git add provider-llm-diagram.svg provider-llm.png
+   git commit -m "Update provider architecture diagram"
+   ```
+
+---
+
+## Image Guidelines
+
+- **PNG files**: For screenshots and rendered diagrams (used in GitHub README)
+- **SVG files**: For editable vector graphics (source files)
+- **Resolution**: High DPI (2400px width for PNG exports)
+- **Compression**: Optimize PNGs before committing
+
+---
+
+**Last Updated**: December 21, 2024

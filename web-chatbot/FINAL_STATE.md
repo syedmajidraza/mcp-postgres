@@ -162,16 +162,23 @@ OPENAI_API_KEY=
 
 ### **Architecture**
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/syedmajidraza/mcp-postgres/main/docs/images/provider-llm.png" alt="AI Provider Architecture" width="800">
+  <br>
+  <em>Complete AI Provider Architecture Diagram</em>
+</p>
+
+**Data Flow:**
 ```
 Web Browser (localhost:8080)
         ↓
     Express Server
         ↓
-    ┌───┴────┐
-    │        │
-GitHub    ChatGPT
-Copilot     API
-(proxy)
+    ┌─────┼─────┐
+    │     │     │
+GitHub  Azure  ChatGPT
+Copilot OpenAI  API
+(proxy) (disabled)
     │
 VS Code
 Extension

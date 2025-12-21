@@ -262,6 +262,14 @@ web-chatbot/
 
 ## 🎯 Architecture
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/syedmajidraza/mcp-postgres/main/docs/images/provider-llm.png" alt="AI Provider Architecture" width="900">
+  <br>
+  <em>Complete architecture showing all AI provider options and data flow</em>
+</p>
+
+### Architecture Overview
+
 ```
 ┌─────────────────────────────────────────────┐
 │    Web Browser                              │
