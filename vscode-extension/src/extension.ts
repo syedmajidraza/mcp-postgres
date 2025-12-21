@@ -4,11 +4,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
 import * as http from 'http';
+import { AIProviderManager } from './providers/ai-provider';
 
 let mcpServerProcess: ChildProcess | null = null;
 let outputChannel: vscode.OutputChannel;
 let statusBarItem: vscode.StatusBarItem;
 let copilotProxyServer: http.Server | null = null;
+let aiProviderManager: AIProviderManager;
 
 // Cache for database schema to improve inline completion performance
 interface SchemaCache {
@@ -32,6 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel('PostgreSQL MCP');
     context.subscriptions.push(outputChannel);
 
+    // Initialize AI provider manager
+    aiProviderManager = new AIProviderManager(outputChannel);
+
     // Create status bar item
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.command = 'postgres-mcp.showStatus';
@@ -44,7 +49,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('postgres-mcp.stopServer', stopMcpServer),
         vscode.commands.registerCommand('postgres-mcp.restartServer', () => restartMcpServer(context)),
         vscode.commands.registerCommand('postgres-mcp.configure', configureDatabase),
-        vscode.commands.registerCommand('postgres-mcp.showStatus', showServerStatus)
+        vscode.commands.registerCommand('postgres-mcp.showStatus', showServerStatus),
+        vscode.commands.registerCommand('postgres-mcp.selectAIProvider', selectAIProvider)
     );
 
     // Register chat participant
@@ -100,15 +106,15 @@ function startCopilotProxyServer() {
                 try {
                     const { query, schema } = JSON.parse(body);
 
-                    // Get GitHub Copilot LLM
-                    const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
-                    if (models.length === 0) {
+                    // Get AI model from configured provider
+                    let model: vscode.LanguageModelChat;
+                    try {
+                        model = await aiProviderManager.getModel();
+                    } catch (error) {
                         res.writeHead(503);
-                        res.end(JSON.stringify({ error: 'GitHub Copilot not available' }));
+                        res.end(JSON.stringify({ error: `AI provider not available: ${error}` }));
                         return;
                     }
-
-                    const model = models[0];
 
                     // Create prompt for SQL generation
                     const systemPrompt = `You are a PostgreSQL expert assistant. Convert natural language queries into valid PostgreSQL SQL statements.
@@ -530,19 +536,8 @@ async function generateSQLWithLLM(naturalLanguageQuery: string, baseUrl: string)
             }
         }
 
-        // Get available language models - respects user's model selection
-        const models = await vscode.lm.selectChatModels({
-            vendor: 'copilot'
-            // No family restriction - uses user's preferred Copilot model
-            // User can select GPT-4o, GPT-4, GPT-3.5, o1, etc. in Copilot settings
-        });
-
-        if (models.length === 0) {
-            throw new Error('GitHub Copilot is not available. Please ensure Copilot is activated.');
-        }
-
-        // Use user's preferred model (first in list is their default selection)
-        const model = models[0];
+        // Get AI model from configured provider
+        const model = await aiProviderManager.getModel();
         outputChannel.appendLine(`[LLM] Using model: ${model.family || model.id}`);
 
         // Create prompt for SQL generation
@@ -1072,12 +1067,13 @@ class PostgreSQLInlineCompletionProvider implements vscode.InlineCompletionItemP
             const schemaContext = this.buildSchemaContext();
 
             // Use Copilot to generate function body with schema context
-            const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
-            if (models.length === 0) {
+            let model: vscode.LanguageModelChat;
+            try {
+                model = await aiProviderManager.getModel();
+            } catch (error) {
+                outputChannel.appendLine(`[Inline Completion] AI provider not available: ${error}`);
                 return [];
             }
-
-            const model = models[0];
 
             const prompt = `You are a PostgreSQL expert. Complete the following stored procedure/function definition using PL/pgSQL syntax.
 
@@ -1137,12 +1133,13 @@ ${textBeforeCursor}
             const schemaContext = this.buildSchemaContext();
 
             // Use Copilot to suggest table structure
-            const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
-            if (models.length === 0) {
+            let model: vscode.LanguageModelChat;
+            try {
+                model = await aiProviderManager.getModel();
+            } catch (error) {
+                outputChannel.appendLine(`[Inline Completion] AI provider not available: ${error}`);
                 return [];
             }
-
-            const model = models[0];
 
             const prompt = `You are a PostgreSQL expert. Complete the following CREATE TABLE statement.
 
@@ -1300,6 +1297,38 @@ async function refreshSchemaCacheIfNeeded(): Promise<void> {
     const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
     if (Date.now() - schemaCache.lastUpdated > CACHE_TTL) {
         await refreshSchemaCache();
+    }
+}
+
+async function selectAIProvider() {
+    const providers = await aiProviderManager.getAvailableProviders();
+
+    const quickPickItems = providers.map(p => ({
+        label: p.label,
+        description: p.description,
+        detail: p.available ? 'Ready to use' : 'Not available - please install and authenticate',
+        id: p.id
+    }));
+
+    const selected = await vscode.window.showQuickPick(quickPickItems, {
+        placeHolder: 'Select AI provider for SQL assistance',
+        title: 'PostgreSQL MCP: AI Provider Selection'
+    });
+
+    if (selected) {
+        const config = vscode.workspace.getConfiguration('postgresMcp');
+        await config.update('ai.provider', selected.id, vscode.ConfigurationTarget.Global);
+
+        vscode.window.showInformationMessage(
+            `AI provider set to: ${selected.label}`,
+            'Configure Settings'
+        ).then(action => {
+            if (action === 'Configure Settings') {
+                vscode.commands.executeCommand('workbench.action.openSettings', 'postgresMcp.ai');
+            }
+        });
+
+        outputChannel.appendLine(`AI provider changed to: ${selected.label}`);
     }
 }
 

@@ -43,6 +43,10 @@
       {
         "command": "postgres-mcp.showStatus",
         "title": "PostgreSQL MCP: Show Server Status"
+      },
+      {
+        "command": "postgres-mcp.selectAIProvider",
+        "title": "PostgreSQL MCP: Select AI Provider"
       }
     ],
     "configuration": {
@@ -102,6 +106,29 @@
           "type": "boolean",
           "default": true,
           "description": "Include database schema context in inline completion suggestions"
+        },
+        "postgresMcp.ai.provider": {
+          "type": "string",
+          "default": "copilot",
+          "enum": [
+            "copilot",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "Use GitHub Copilot (requires GitHub Copilot subscription)",
+            "Use custom language model (Azure OpenAI, Claude, local models via BYOK extensions)"
+          ],
+          "description": "Select the AI provider for SQL generation and completions"
+        },
+        "postgresMcp.ai.modelFamily": {
+          "type": "string",
+          "default": "gpt-4",
+          "description": "Preferred model family when using custom provider (e.g., 'gpt-4', 'claude-3', 'llama')"
+        },
+        "postgresMcp.ai.fallbackEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Fallback to GitHub Copilot if custom provider is unavailable"
         }
       }
     },
