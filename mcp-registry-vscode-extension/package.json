@@ -1,0 +1,219 @@
+{
+  "name": "mcp-registry-manager",
+  "displayName": "MCP Registry Manager",
+  "description": "Browse, download, and manage MCP servers from your internal registry",
+  "version": "1.0.0",
+  "publisher": "your-company",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "registry",
+    "ai",
+    "copilot"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mcpRegistry.refreshServers",
+        "title": "Refresh MCP Servers",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "mcpRegistry.installServer",
+        "title": "Install MCP Server",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "mcpRegistry.startServer",
+        "title": "Start MCP Server",
+        "icon": "$(play)"
+      },
+      {
+        "command": "mcpRegistry.stopServer",
+        "title": "Stop MCP Server",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "mcpRegistry.restartServer",
+        "title": "Restart MCP Server",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "mcpRegistry.uninstallServer",
+        "title": "Uninstall MCP Server",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "mcpRegistry.viewLogs",
+        "title": "View MCP Server Logs",
+        "icon": "$(output)"
+      },
+      {
+        "command": "mcpRegistry.configure",
+        "title": "Configure MCP Server",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "mcpRegistry.setRegistryUrl",
+        "title": "Set Registry URL"
+      },
+      {
+        "command": "mcpRegistry.searchServers",
+        "title": "Search MCP Servers",
+        "icon": "$(search)"
+      },
+      {
+        "command": "mcpRegistry.showServerDetails",
+        "title": "Show Server Details",
+        "icon": "$(info)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mcp-registry",
+          "title": "MCP Registry",
+          "icon": "$(server)"
+        }
+      ]
+    },
+    "views": {
+      "mcp-registry": [
+        {
+          "id": "mcpRegistry.availableServers",
+          "name": "Available Servers",
+          "icon": "$(cloud)",
+          "contextualTitle": "MCP Registry"
+        },
+        {
+          "id": "mcpRegistry.installedServers",
+          "name": "Installed Servers",
+          "icon": "$(package)",
+          "contextualTitle": "Installed MCP Servers"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "mcpRegistry.refreshServers",
+          "when": "view == mcpRegistry.availableServers",
+          "group": "navigation"
+        },
+        {
+          "command": "mcpRegistry.searchServers",
+          "when": "view == mcpRegistry.availableServers",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "mcpRegistry.installServer",
+          "when": "view == mcpRegistry.availableServers && viewItem == availableServer",
+          "group": "inline"
+        },
+        {
+          "command": "mcpRegistry.showServerDetails",
+          "when": "view == mcpRegistry.availableServers && viewItem == availableServer"
+        },
+        {
+          "command": "mcpRegistry.startServer",
+          "when": "view == mcpRegistry.installedServers && viewItem == installedServer-stopped",
+          "group": "inline"
+        },
+        {
+          "command": "mcpRegistry.stopServer",
+          "when": "view == mcpRegistry.installedServers && viewItem == installedServer-running",
+          "group": "inline"
+        },
+        {
+          "command": "mcpRegistry.restartServer",
+          "when": "view == mcpRegistry.installedServers && viewItem == installedServer-running"
+        },
+        {
+          "command": "mcpRegistry.configure",
+          "when": "view == mcpRegistry.installedServers && viewItem =~ /installedServer/",
+          "group": "inline"
+        },
+        {
+          "command": "mcpRegistry.viewLogs",
+          "when": "view == mcpRegistry.installedServers && viewItem =~ /installedServer/"
+        },
+        {
+          "command": "mcpRegistry.uninstallServer",
+          "when": "view == mcpRegistry.installedServers && viewItem =~ /installedServer/"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MCP Registry",
+      "properties": {
+        "mcpRegistry.registryUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "URL of your internal MCP registry"
+        },
+        "mcpRegistry.installDirectory": {
+          "type": "string",
+          "default": "~/.mcp-servers",
+          "description": "Directory where MCP servers will be installed"
+        },
+        "mcpRegistry.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start all installed MCP servers on VS Code startup"
+        },
+        "mcpRegistry.defaultMcpClient": {
+          "type": "string",
+          "default": "claude-desktop",
+          "enum": [
+            "claude-desktop",
+            "cline",
+            "continue",
+            "cursor",
+            "zed",
+            "custom"
+          ],
+          "description": "Default MCP client to configure when installing servers"
+        },
+        "mcpRegistry.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Path to Python executable"
+        },
+        "mcpRegistry.nodePath": {
+          "type": "string",
+          "default": "node",
+          "description": "Path to Node.js executable"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.2",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}

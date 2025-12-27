@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: mcp-registry-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./storage:/storage/mcp-servers
+      - ./backend:/app
+    environment:
+      - STORAGE_PATH=/storage/mcp-servers
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  frontend:
+    build: ./frontend
+    container_name: mcp-registry-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
+
+volumes:
+  storage:
+    driver: local
