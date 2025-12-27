@@ -39,13 +39,13 @@ class InstalledServerItem extends vscode.TreeItem {
     ) {
         super(serverName, vscode.TreeItemCollapsibleState.None);
 
-        this.description = isRunning ? '● Running' : '○ Stopped';
+        this.description = isRunning ? '🟢 Running' : '🔴 Stopped';
         this.contextValue = isRunning ? 'installedServer-running' : 'installedServer-stopped';
 
         if (isRunning) {
-            this.iconPath = new vscode.ThemeIcon('debug-start', new vscode.ThemeColor('charts.green'));
+            this.iconPath = new vscode.ThemeIcon('pass-filled', new vscode.ThemeColor('testing.iconPassed'));
         } else {
-            this.iconPath = new vscode.ThemeIcon('circle-outline');
+            this.iconPath = new vscode.ThemeIcon('circle-slash', new vscode.ThemeColor('testing.iconFailed'));
         }
 
         this.tooltip = isRunning ? `${serverName} is running` : `${serverName} is stopped`;
