@@ -6,10 +6,11 @@ Complete internal solution for managing MCP servers - publish, browse, install, 
 
 ## 📦 Components
 
-### 1. **MCP Registry** (Docker)
+### 1. **MCP Registry** (Docker/Podman)
 Central registry for hosting MCP servers internally.
 - **Location:** `mcp-registry/`
 - **Ports:** Backend (8000), Frontend (3001)
+- **Supports:** Docker & Podman
 
 ### 2. **PostgreSQL MCP Server**
 Query PostgreSQL databases via MCP protocol.
@@ -27,9 +28,16 @@ Unified manager for all MCP servers.
 
 ### 1. Start MCP Registry
 
+**Docker:**
 ```bash
 cd mcp-registry
 docker-compose up -d
+```
+
+**Podman:**
+```bash
+cd mcp-registry
+podman-compose up -d
 ```
 
 **Access:**
@@ -117,15 +125,26 @@ Or use **Web UI:** http://localhost:3001 → Publish tab
 
 ### MCP Registry
 
-**Start:**
+**Start (Docker):**
 ```bash
 cd mcp-registry
 docker-compose up -d
 ```
 
-**Stop:**
+**Start (Podman):**
+```bash
+cd mcp-registry
+podman-compose up -d
+```
+
+**Stop (Docker):**
 ```bash
 docker-compose down
+```
+
+**Stop (Podman):**
+```bash
+podman-compose down
 ```
 
 **API:**
@@ -169,10 +188,10 @@ postgres-mcp/
 │   ├── config.py
 │   └── requirements.txt
 │
-└── unified-mcp-extension/     # VS Code ext
+└── syed-mcp-server-extension/  # VS Code ext
     ├── src/
     ├── package.json
-    └── mcp-server-manager-1.0.0.vsix
+    └── syed-mcp-server-extension-1.0.0.vsix
 ```
 
 ---
@@ -181,8 +200,13 @@ postgres-mcp/
 
 **Registry not accessible:**
 ```bash
-docker ps  # Check running
-curl http://localhost:8000  # Test API
+# Docker
+docker ps
+# OR Podman
+podman ps
+
+# Test API
+curl http://localhost:8000
 ```
 
 **Extension not showing:**

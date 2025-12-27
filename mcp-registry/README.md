@@ -4,18 +4,36 @@ Internal registry for hosting MCP servers.
 
 ## Quick Start
 
-Start the registry:
+### Start the registry
+
+**Docker:**
 ```bash
 docker-compose up -d
 ```
 
-Access:
+**Podman:**
+```bash
+podman-compose up -d
+# OR with alias
+alias docker=podman && alias docker-compose=podman-compose
+docker-compose up -d
+```
+
+### Access
+
 - **Frontend UI**: http://localhost:3001
 - **Backend API**: http://localhost:8000
 
-Stop the registry:
+### Stop the registry
+
+**Docker:**
 ```bash
 docker-compose down
+```
+
+**Podman:**
+```bash
+podman-compose down
 ```
 
 ## Publish a Server
@@ -59,18 +77,56 @@ mcp-registry/
 
 ## Troubleshooting
 
-Check status:
+### Check status
+
+**Docker:**
 ```bash
 docker ps
 ```
 
-View logs:
+**Podman:**
+```bash
+podman ps
+```
+
+### View logs
+
+**Docker:**
 ```bash
 docker-compose logs backend
 docker-compose logs frontend
 ```
 
-Restart:
+**Podman:**
+```bash
+podman-compose logs backend
+podman-compose logs frontend
+```
+
+### Restart
+
+**Docker:**
 ```bash
 docker-compose restart
 ```
+
+**Podman:**
+```bash
+podman-compose restart
+```
+
+## Podman Setup
+
+If you don't have `podman-compose` installed:
+
+```bash
+# Install podman-compose
+pip3 install podman-compose
+
+# OR create aliases to use Docker commands
+echo "alias docker=podman" >> ~/.bashrc
+echo "alias docker-compose=podman-compose" >> ~/.bashrc
+source ~/.bashrc
+```
+
+Then use all Docker commands as normal!

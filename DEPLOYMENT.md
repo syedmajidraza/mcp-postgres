@@ -17,14 +17,23 @@ Step-by-step guide to deploy MCP Registry and distribute to your team.
 
 ### On Server/Local Machine
 
+**Using Docker:**
 ```bash
 cd mcp-registry
-
-# Start registry with Docker
 docker-compose up -d
 
 # Verify running
 docker ps
+curl http://localhost:8000
+```
+
+**Using Podman:**
+```bash
+cd mcp-registry
+podman-compose up -d
+
+# Verify running
+podman ps
 curl http://localhost:8000
 ```
 
@@ -33,6 +42,18 @@ curl http://localhost:8000
 - Frontend: `http://localhost:3001`
 
 **For production:** Replace `localhost` with your server IP/domain.
+
+### Podman Setup (if needed)
+
+```bash
+# Install podman-compose
+pip3 install podman-compose
+
+# OR create aliases
+echo "alias docker=podman" >> ~/.bashrc
+echo "alias docker-compose=podman-compose" >> ~/.bashrc
+source ~/.bashrc
+```
 
 ---
 

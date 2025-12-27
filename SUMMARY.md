@@ -12,11 +12,11 @@ Complete internal MCP server management system with:
 
 ## 📁 Core Components
 
-### `/mcp-registry/` - MCP Registry (Docker)
+### `/mcp-registry/` - MCP Registry (Docker/Podman)
 
 **Purpose:** Central registry for MCP servers
 
-**Status:** ✅ Running on Docker
+**Status:** ✅ Running on Docker or Podman
 - Backend: http://localhost:8000
 - Frontend: http://localhost:3001
 
@@ -26,11 +26,18 @@ Complete internal MCP server management system with:
 - Download packages
 - Track statistics
 
-**Management:**
+**Management (Docker):**
 ```bash
 docker-compose up -d    # Start
 docker-compose down     # Stop
 docker ps               # Check status
+```
+
+**Management (Podman):**
+```bash
+podman-compose up -d    # Start
+podman-compose down     # Stop
+podman ps               # Check status
 ```
 
 ---
