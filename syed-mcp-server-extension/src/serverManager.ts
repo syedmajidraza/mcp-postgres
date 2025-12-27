@@ -136,6 +136,39 @@ export class ServerManager {
         });
     }
 
+    private async checkAndKillPortConflict(port: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // Use lsof to find process using the port
+            cp.exec(`lsof -ti:${port}`, async (error, stdout, stderr) => {
+                if (error) {
+                    // No process using the port
+                    resolve();
+                    return;
+                }
+
+                const pid = stdout.trim();
+                if (pid) {
+                    this.outputChannel.appendLine(`⚠️ Port ${port} is already in use by process ${pid}`);
+
+                    try {
+                        // Kill the process
+                        global.process.kill(parseInt(pid), 'SIGTERM');
+                        this.outputChannel.appendLine(`✓ Killed process ${pid} using port ${port}`);
+
+                        // Wait a bit for the port to be released
+                        await new Promise(r => setTimeout(r, 1000));
+                        resolve();
+                    } catch (err) {
+                        this.outputChannel.appendLine(`Failed to kill process ${pid}: ${err}`);
+                        reject(new Error(`Port ${port} is in use and could not be freed`));
+                    }
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
     async startServer(serverName: string): Promise<void> {
         if (this.runningServers.has(serverName)) {
             throw new Error('Server is already running');
@@ -153,6 +186,14 @@ export class ServerManager {
         // Get server config from secrets
         const configJson = await this.context.secrets.get(`mcp.${serverName}.config`);
         const serverConfig: ServerConfig = configJson ? JSON.parse(configJson) : {};
+
+        // Check for port conflict and kill if necessary
+        const defaultPort = 3000; // You can make this configurable per server
+        try {
+            await this.checkAndKillPortConflict(defaultPort);
+        } catch (err: any) {
+            throw new Error(`Failed to start server: ${err.message}`);
+        }
 
         let serverProcess: cp.ChildProcess;
         const logs: string[] = [];

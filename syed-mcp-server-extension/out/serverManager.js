@@ -142,6 +142,37 @@ class ServerManager {
             });
         });
     }
+    async checkAndKillPortConflict(port) {
+        return new Promise((resolve, reject) => {
+            // Use lsof to find process using the port
+            cp.exec(`lsof -ti:${port}`, async (error, stdout, stderr) => {
+                if (error) {
+                    // No process using the port
+                    resolve();
+                    return;
+                }
+                const pid = stdout.trim();
+                if (pid) {
+                    this.outputChannel.appendLine(`⚠️ Port ${port} is already in use by process ${pid}`);
+                    try {
+                        // Kill the process
+                        global.process.kill(parseInt(pid), 'SIGTERM');
+                        this.outputChannel.appendLine(`✓ Killed process ${pid} using port ${port}`);
+                        // Wait a bit for the port to be released
+                        await new Promise(r => setTimeout(r, 1000));
+                        resolve();
+                    }
+                    catch (err) {
+                        this.outputChannel.appendLine(`Failed to kill process ${pid}: ${err}`);
+                        reject(new Error(`Port ${port} is in use and could not be freed`));
+                    }
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
     async startServer(serverName) {
         if (this.runningServers.has(serverName)) {
             throw new Error('Server is already running');
@@ -156,6 +187,14 @@ class ServerManager {
         // Get server config from secrets
         const configJson = await this.context.secrets.get(`mcp.${serverName}.config`);
         const serverConfig = configJson ? JSON.parse(configJson) : {};
+        // Check for port conflict and kill if necessary
+        const defaultPort = 3000; // You can make this configurable per server
+        try {
+            await this.checkAndKillPortConflict(defaultPort);
+        }
+        catch (err) {
+            throw new Error(`Failed to start server: ${err.message}`);
+        }
         let serverProcess;
         const logs = [];
         // Determine server type and start

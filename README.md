@@ -20,7 +20,8 @@ Query PostgreSQL databases via MCP protocol.
 ### 3. **VS Code Extension**
 Unified manager for all MCP servers.
 - **Location:** `syed-mcp-server-extension/`
-- **Features:** Install, Start, Stop, Configure, View Logs
+- **Features:** Install, Start, Stop, Configure, View Logs, Start All, Stop All
+- **Smart Features:** Auto port conflict detection, Persistent status tracking
 
 ---
 
@@ -156,11 +157,19 @@ podman-compose down
 ### VS Code Extension Commands
 
 - `MCP: Install Server` - Install from registry
-- `MCP: Start Server` - Start server
-- `MCP: Stop Server` - Stop server
+- `MCP: Start Server` - Start individual server
+- `MCP: Stop Server` - Stop individual server
+- `MCP: Start All Servers` - Start all installed servers
+- `MCP: Stop All Servers` - Stop all running servers
 - `MCP: Configure Server` - Set environment vars
 - `MCP: View Server Logs` - Debug logs
 - `MCP: Refresh Registry` - Reload list
+
+**Smart Features:**
+- 🟢 Green checkmark for running servers
+- 🔴 Red circle-slash for stopped servers
+- Auto-kills processes using conflicting ports
+- Status persists across VS Code reloads
 
 ### Settings
 
@@ -230,7 +239,10 @@ Cmd+Shift+P → "Developer: Reload Window"
 
 - ✅ **Internal MCP Registry** - No public dependencies
 - ✅ **One-Click Install** - Browse and install from VS Code
-- ✅ **Server Management** - Start/Stop/Configure via GUI
+- ✅ **Smart Server Management** - Start/Stop/Configure via GUI with visual status indicators
+- ✅ **Auto Port Conflict Resolution** - Automatically kills processes using conflicting ports
+- ✅ **Persistent Status Tracking** - Server status survives VS Code reloads
+- ✅ **Bulk Operations** - Start/Stop all servers with one click
 - ✅ **PostgreSQL Queries** - Ask AI to query your databases
 - ✅ **Team Distribution** - Centralized, version-controlled servers
 - ✅ **Works with any MCP client** - Claude Desktop, Cline, Continue, Cursor, Zed
