@@ -1,7 +1,7 @@
 {
-  "name": "syed-mcp-extension",
-  "displayName": "Syed MCP Extension",
-  "description": "Unified manager for all MCP servers from your internal registry - Install, Start, Stop, Configure",
+  "name": "syed-mcp-server-extension",
+  "displayName": "Syed MCP Server Extension",
+  "description": "Manager for all MCP servers from your internal registry - Install, Start, Stop, Configure",
   "version": "1.0.0",
   "publisher": "your-company",
   "engines": {

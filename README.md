@@ -18,7 +18,7 @@ Query PostgreSQL databases via MCP protocol.
 
 ### 3. **VS Code Extension**
 Unified manager for all MCP servers.
-- **Location:** `unified-mcp-extension/`
+- **Location:** `syed-mcp-server-extension/`
 - **Features:** Install, Start, Stop, Configure, View Logs
 
 ---
@@ -39,11 +39,7 @@ docker-compose up -d
 ### 2. Install VS Code Extension
 
 ```bash
-cd unified-mcp-extension
-npm install
-npm run compile
-npm run package
-code --install-extension mcp-server-manager-1.0.0.vsix
+code --install-extension syed-mcp-server-extension/syed-mcp-server-extension-1.0.0.vsix
 ```
 
 **Reload VS Code:** `Cmd+Shift+P` → "Developer: Reload Window"

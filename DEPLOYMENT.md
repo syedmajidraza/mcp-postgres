@@ -63,7 +63,7 @@ curl http://localhost:8000/api/v1/servers | jq
 ## Step 3: Build VS Code Extension
 
 ```bash
-cd unified-mcp-extension
+cd syed-mcp-server-extension
 
 # Install dependencies
 npm install
@@ -74,8 +74,8 @@ npm run compile
 # Package as VSIX
 npm run package
 
-# Output: mcp-server-manager-1.0.0.vsix
-ls -lh mcp-server-manager-1.0.0.vsix
+# Output: syed-mcp-server-extension-1.0.0.vsix
+ls -lh syed-mcp-server-extension-1.0.0.vsix
 ```
 
 ---
@@ -87,7 +87,7 @@ ls -lh mcp-server-manager-1.0.0.vsix
 **Option A: File Share**
 ```bash
 # Copy to shared drive
-cp unified-mcp-extension/mcp-server-manager-1.0.0.vsix /shared/drive/
+cp unified-mcp-extension/syed-mcp-server-extension-1.0.0.vsix /shared/drive/
 ```
 
 **Option B: Internal Package Registry**
@@ -96,7 +96,7 @@ cp unified-mcp-extension/mcp-server-manager-1.0.0.vsix /shared/drive/
 ```
 
 **Option C: Email/Slack**
-- Attach `mcp-server-manager-1.0.0.vsix`
+- Attach `syed-mcp-server-extension-1.0.0.vsix`
 - Include installation instructions
 
 ### Installation Instructions for Team
@@ -106,7 +106,7 @@ Send this to developers:
 ```
 📦 MCP Server Manager Extension
 
-1. Download: mcp-server-manager-1.0.0.vsix
+1. Download: syed-mcp-server-extension-1.0.0.vsix
 2. Open VS Code
 3. Press Cmd+Shift+P
 4. Type: "Extensions: Install from VSIX..."
@@ -130,7 +130,7 @@ Create `.vscode/settings.json` in your project:
   "mcpManager.registryUrl": "http://your-registry-server:8000",
   "mcpManager.autoStartServers": false,
   "extensions.recommendations": [
-    "your-company.mcp-server-manager"
+    "your-company.syed-mcp-server-extension"
   ]
 }
 ```
@@ -222,7 +222,7 @@ Developers will see new version in Registry panel.
 
 ```bash
 # Make changes to extension
-cd unified-mcp-extension
+cd syed-mcp-server-extension
 
 # Bump version in package.json
 # "version": "1.1.0"

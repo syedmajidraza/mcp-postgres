@@ -55,11 +55,11 @@ docker ps               # Check status
 
 ---
 
-### `/unified-mcp-extension/` - VS Code Extension
+### `/syed-mcp-server-extension/` - VS Code Extension
 
 **Purpose:** Unified manager for all MCP servers
 
-**Status:** ✅ Built as `mcp-server-manager-1.0.0.vsix`
+**Status:** ✅ Built as `syed-mcp-server-extension-1.0.0.vsix`
 
 **Features:**
 - Browse registry servers
@@ -71,7 +71,7 @@ docker ps               # Check status
 
 **Install:**
 ```bash
-code --install-extension mcp-server-manager-1.0.0.vsix
+code --install-extension syed-mcp-server-extension/syed-mcp-server-extension-1.0.0.vsix
 ```
 
 ---
@@ -128,12 +128,8 @@ docker-compose down
 ### Extension
 
 ```bash
-# Build
-cd unified-mcp-extension
-npm install && npm run compile && npm run package
-
 # Install
-code --install-extension mcp-server-manager-1.0.0.vsix
+code --install-extension syed-mcp-server-extension/syed-mcp-server-extension-1.0.0.vsix
 
 # Use
 # Open VS Code → Click MCP Servers icon
@@ -160,7 +156,7 @@ curl -X POST http://localhost:8000/api/v1/publish \
 - **[README.md](README.md)** - Overview and quick start
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
 - **Registry README:** `mcp-registry/README.md`
-- **Extension README:** `unified-mcp-extension/README.md`
+- **Extension README:** `syed-mcp-server-extension/README.md`
 
 ---
 
