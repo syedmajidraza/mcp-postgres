@@ -115,14 +115,14 @@ Or use **Web UI:** http://localhost:3001 → Publish tab
 1. Install `postgres-mcp` via extension
 2. Configure: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
 3. Start server
-4. Use with Claude Desktop/Cline/Continue
+4. Use with AI assistants in VS Code (Continue, Cline, Cursor, etc.)
 5. Ask: "List all tables" or "Show sales data"
 
 ### Convert Files to Markdown
 
 1. Install `markitdown-mcp` via extension
 2. Click play icon to start server
-3. Use with Claude Desktop/Cline/Continue
+3. Use with AI assistants in VS Code (Continue, Cline, Cursor, etc.)
 4. Ask: "Convert /path/to/file.pdf to markdown"
 5. Supports: PDF, Word, Excel, PowerPoint, Images, HTML, URLs
 
@@ -210,43 +210,25 @@ podman-compose down
 }
 ```
 
-### Claude Desktop Configuration
+### Using MCP Servers in VS Code
 
-To use MCP servers with Claude Desktop, add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Once installed via the extension, MCP servers run locally and can be used with:
 
-```json
-{
-  "mcpServers": {
-    "postgres-mcp": {
-      "command": "python3",
-      "args": [
-        "/Users/YOUR_USERNAME/.mcp-servers/postgres-mcp/server.py"
-      ],
-      "env": {
-        "DB_HOST": "localhost",
-        "DB_PORT": "5432",
-        "DB_NAME": "your_database",
-        "DB_USER": "your_username",
-        "DB_PASSWORD": "your_password"
-      }
-    },
-    "markitdown-mcp": {
-      "command": "python3",
-      "args": [
-        "/Users/YOUR_USERNAME/.mcp-servers/markitdown-mcp/server.py"
-      ]
-    }
-  }
-}
-```
+**AI Extensions in VS Code:**
+- **Continue** - AI coding assistant
+- **Cline** - AI assistant with terminal access
+- **Cursor** - AI-powered code editor
+- **GitHub Copilot Chat** - With MCP support
 
-**Then:**
-1. Restart Claude Desktop
-2. Look for 🔌 icon showing connected MCP servers
-3. Ask Claude to use the tools:
-   - "List all tables in my database"
+**How to Use:**
+1. Install MCP server via extension (click download icon)
+2. Configure if needed (click gear icon)
+3. Start server (click play icon)
+4. Use with your preferred AI assistant in VS Code
+5. Ask questions like:
+   - "List all tables in the database"
    - "Convert this PDF to markdown: /path/to/file.pdf"
-   - "What file formats can markitdown convert?"
+   - "What file formats can you convert?"
 
 ---
 
@@ -324,8 +306,9 @@ Cmd+Shift+P → "Developer: Reload Window"
 - ✅ **MarkItDown MCP** - Convert PDF, Word, Excel, PowerPoint, Images to Markdown
 - ✅ **Easy Publishing** - Package and publish your own MCP servers to the registry
 
-### Compatible Clients
-- ✅ **Works with any MCP client** - Claude Desktop, Cline, Continue, Cursor, Zed
+### Compatible AI Assistants
+- ✅ **VS Code AI Extensions** - Continue, Cline, Cursor, GitHub Copilot Chat (with MCP)
+- ✅ **Standalone Clients** - Any MCP-compatible client
 
 ---
 
