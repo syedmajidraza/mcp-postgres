@@ -17,7 +17,13 @@ Query PostgreSQL databases via MCP protocol.
 - **Location:** `mcp-server/`
 - **Tools:** Query DB, List Tables, Describe Schema
 
-### 3. **VS Code Extension**
+### 3. **MarkItDown MCP Server**
+Convert any file to Markdown (PDF, Word, Excel, Images, etc.).
+- **Location:** `markitdown-mcp/`
+- **Tools:** Convert Files, Convert URLs, List Supported Formats
+- **Formats:** PDF, DOCX, XLSX, PPTX, Images, HTML, CSV, JSON, ZIP
+
+### 4. **VS Code Extension**
 Unified manager for all MCP servers.
 - **Location:** `syed-mcp-server-extension/`
 - **Features:** Install, Start, Stop, Configure, View Logs, Start All, Stop All
@@ -112,6 +118,29 @@ Or use **Web UI:** http://localhost:3001 → Publish tab
 4. Use with Claude Desktop/Cline/Continue
 5. Ask: "List all tables" or "Show sales data"
 
+### Convert Files to Markdown
+
+1. Install `markitdown-mcp` via extension
+2. Click play icon to start server
+3. Use with Claude Desktop/Cline/Continue
+4. Ask: "Convert /path/to/file.pdf to markdown"
+5. Supports: PDF, Word, Excel, PowerPoint, Images, HTML, URLs
+
+**Supported Formats:**
+- **Documents**: PDF, DOCX, XLSX, PPTX
+- **Images**: JPG, PNG, GIF, TIFF, WebP
+- **Web**: HTML files, Any webpage URL
+- **Data**: CSV, JSON, XML
+- **Archives**: ZIP (extracts and converts)
+
+**Example Prompts:**
+```
+"Convert this PDF to markdown: /Users/john/Documents/report.pdf"
+"Convert this webpage: https://github.com/microsoft/markitdown"
+"What file formats can you convert?"
+"Convert all PDFs in /Users/john/Documents/"
+```
+
 ### Team Setup
 
 1. **Admin:** Publish approved MCP servers to registry
@@ -171,7 +200,7 @@ podman-compose down
 - Auto-kills processes using conflicting ports
 - Status persists across VS Code reloads
 
-### Settings
+### VS Code Extension Settings
 
 ```json
 {
@@ -180,6 +209,44 @@ podman-compose down
   "mcpManager.pythonPath": "python3"
 }
 ```
+
+### Claude Desktop Configuration
+
+To use MCP servers with Claude Desktop, add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "postgres-mcp": {
+      "command": "python3",
+      "args": [
+        "/Users/YOUR_USERNAME/.mcp-servers/postgres-mcp/server.py"
+      ],
+      "env": {
+        "DB_HOST": "localhost",
+        "DB_PORT": "5432",
+        "DB_NAME": "your_database",
+        "DB_USER": "your_username",
+        "DB_PASSWORD": "your_password"
+      }
+    },
+    "markitdown-mcp": {
+      "command": "python3",
+      "args": [
+        "/Users/YOUR_USERNAME/.mcp-servers/markitdown-mcp/server.py"
+      ]
+    }
+  }
+}
+```
+
+**Then:**
+1. Restart Claude Desktop
+2. Look for 🔌 icon showing connected MCP servers
+3. Ask Claude to use the tools:
+   - "List all tables in my database"
+   - "Convert this PDF to markdown: /path/to/file.pdf"
+   - "What file formats can markitdown convert?"
 
 ---
 
@@ -196,6 +263,12 @@ postgres-mcp/
 │   ├── server.py
 │   ├── config.py
 │   └── requirements.txt
+│
+├── markitdown-mcp/            # MarkItDown MCP
+│   ├── server.py
+│   ├── config.json
+│   ├── requirements.txt
+│   └── README.md
 │
 └── syed-mcp-server-extension/  # VS Code ext
     ├── src/
@@ -237,14 +310,21 @@ Cmd+Shift+P → "Developer: Reload Window"
 
 ## ✅ What You Get
 
-- ✅ **Internal MCP Registry** - No public dependencies
+### Infrastructure
+- ✅ **Internal MCP Registry** - No public dependencies, fully self-hosted
 - ✅ **One-Click Install** - Browse and install from VS Code
 - ✅ **Smart Server Management** - Start/Stop/Configure via GUI with visual status indicators
 - ✅ **Auto Port Conflict Resolution** - Automatically kills processes using conflicting ports
 - ✅ **Persistent Status Tracking** - Server status survives VS Code reloads
 - ✅ **Bulk Operations** - Start/Stop all servers with one click
-- ✅ **PostgreSQL Queries** - Ask AI to query your databases
 - ✅ **Team Distribution** - Centralized, version-controlled servers
+
+### MCP Servers Included
+- ✅ **PostgreSQL MCP** - Ask AI to query your databases, list tables, describe schemas
+- ✅ **MarkItDown MCP** - Convert PDF, Word, Excel, PowerPoint, Images to Markdown
+- ✅ **Easy Publishing** - Package and publish your own MCP servers to the registry
+
+### Compatible Clients
 - ✅ **Works with any MCP client** - Claude Desktop, Cline, Continue, Cursor, Zed
 
 ---
