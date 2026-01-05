@@ -538,8 +538,15 @@
                     // MCP tool response
                     responseText = JSON.stringify(data.result, null, 2);
                     addMessage(responseText, false, data);
+                } else if (data.hasResults && data.data) {
+                    // Chat response with data - show table prominently
+                    const tableHtml = formatQueryResults(data.data);
+                    const summaryHtml = data.sql ?
+                        `<p><strong>SQL Query:</strong></p><pre><code>${data.sql}</code></pre>` : '';
+                    const countHtml = `<p><strong>Results:</strong> ${data.rowCount} row(s)</p>`;
+                    addMessage(countHtml + tableHtml + summaryHtml, false);
                 } else if (data.response) {
-                    // Chat response
+                    // Chat response without data
                     addMessage(data.response, false);
                 } else {
                     addMessage(JSON.stringify(data, null, 2), false);
