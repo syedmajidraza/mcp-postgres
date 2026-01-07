@@ -155,26 +155,38 @@ The MCP server provides 8 tools for database operations:
 
 ---
 
-## Example Screenshots
+## Screenshots
 
-**Query Results:**
-```
-📊 Summary:
-Found 4 employees in the database...
+### Chatbot Interface
 
-📋 Query Results                    4 row(s)
+The PostgreSQL AI Assistant provides a clean, intuitive interface for querying your database:
 
-┌────┬──────────┬──────────┬─────────────┬────────┐
-│ id │ name     │ lastname │ department  │ salary │
-├────┼──────────┼──────────┼─────────────┼────────┤
-│ 1  │ John     │ Doe      │ Engineering │ 75000  │
-│ 2  │ Jane     │ Smith    │ Marketing   │ 65000  │
-│ 3  │ Alice    │ Johnson  │ HR          │ 60000  │
-│ 4  │ Bob      │ Brown    │ Finance     │ 80000  │
-└────┴──────────┴──────────┴─────────────┴────────┘
+![PostgreSQL AI Assistant](docs/screenshot-chatbot.png)
 
-🔍 View SQL Query (click to expand)
-```
+**Features shown:**
+- ✅ **Connection Status** - Real-time status indicator (Connected/Disconnected)
+- 🔌 **Agent Info** - Shows server endpoint (localhost:8080)
+- 🗄️ **Database Info** - Connected database name and details
+- 📊 **Quick Actions** - Predefined buttons for common queries:
+  - List Tables
+  - Table Structures
+  - View Employees
+  - Available Tables
+  - Show Indexes
+- 💬 **Natural Language Input** - Ask questions in plain English
+- 📋 **Query Results** - Beautiful table display with row counts
+- 🔍 **SQL Query Viewer** - Expandable section to see generated SQL
+- 📈 **AI Summary** - Copilot-generated explanation of results
+
+### Example Query Results
+
+When you ask "Show Indexes", the chatbot:
+1. Generates the appropriate SQL query
+2. Executes it against your database
+3. Displays results in a formatted table
+4. Shows the SQL query used (expandable)
+
+The interface handles all types of queries - from simple table listings to complex analytical queries.
 
 ---
 

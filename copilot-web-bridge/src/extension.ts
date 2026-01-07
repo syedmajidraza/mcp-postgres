@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
+import * as fs from 'fs';
+import * as path from 'path';
 
 let server: http.Server | null = null;
 let outputChannel: vscode.OutputChannel;
@@ -51,6 +53,20 @@ async function startServer() {
         if (req.method === 'OPTIONS') {
             res.writeHead(200);
             res.end();
+            return;
+        }
+
+        // Serve chatbot UI at root
+        if (req.url === '/' && req.method === 'GET') {
+            const htmlPath = path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', 'index.html');
+            if (fs.existsSync(htmlPath)) {
+                const html = fs.readFileSync(htmlPath, 'utf-8');
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end(html);
+            } else {
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
+                res.end('Chatbot UI (index.html) not found in workspace');
+            }
             return;
         }
 
