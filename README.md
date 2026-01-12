@@ -6,17 +6,33 @@ Query your PostgreSQL database using natural language through a web interface po
 
 ## 🚀 Quick Start
 
-**One-command startup:**
+### Option 1: Standard Mode (VS Code Minimized)
 
 ```bash
 ./start-all.sh
 ```
 
-This single script will:
+This will:
 1. ✅ Start MCP Server (port 3000)
 2. ✅ Start VS Code + Copilot Bridge (port 9001) - minimized in background
 3. ✅ Start Web Server (port 9000)
 4. ✅ Open chatbot in your browser automatically
+
+### Option 2: TRUE HEADLESS Mode (No VS Code Window)
+
+```bash
+./start-truly-headless.sh
+```
+
+This will:
+1. ✅ Start MCP Server (port 3000)
+2. ✅ Start Standalone Copilot Bridge (port 9001) - **NO VS CODE needed!**
+3. ✅ Start Web Server (port 9000)
+4. ✅ Open chatbot in your browser automatically
+
+**Perfect for servers or when you don't want any VS Code window!**
+
+> **Note:** Headless mode requires one-time GitHub Copilot authentication in VS Code. See [HEADLESS_MODE.md](HEADLESS_MODE.md) for details.
 
 **Want detailed setup instructions?** → Read **[SETUP.md](SETUP.md)**
 
@@ -218,11 +234,22 @@ The interface handles all types of queries - from simple table listings to compl
 
 ---
 
+## Documentation
+
+📖 **[SETUP.md](SETUP.md)** - Complete setup guide
+🚀 **[HEADLESS_MODE.md](HEADLESS_MODE.md)** - True headless mode (no VS Code window)
+👥 **[MULTI_USER.md](MULTI_USER.md)** - Multi-user support & session isolation
+🔧 **[RUNNING_IN_BACKGROUND.md](RUNNING_IN_BACKGROUND.md)** - Background service details
+🌐 **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
+🏗️ **[ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)** - System architecture
+🔑 **[COPILOT_AUTH.md](COPILOT_AUTH.md)** - Authentication details
+
+---
+
 ## Support
 
-📖 **Documentation:** [SETUP.md](SETUP.md)
 🐛 **Issues:** Check extension output panel
-💬 **Questions:** Review troubleshooting section
+💬 **Questions:** Review troubleshooting section in [SETUP.md](SETUP.md)
 
 ---
 
