@@ -237,6 +237,7 @@ The interface handles all types of queries - from simple table listings to compl
 ## Documentation
 
 📖 **[SETUP.md](SETUP.md)** - Complete setup guide
+⚙️ **[HOW_IT_WORKS.md](HOW_IT_WORKS.md)** - Technical deep dive (request flow, Copilot token usage)
 🚀 **[HEADLESS_MODE.md](HEADLESS_MODE.md)** - True headless mode (no VS Code window)
 👥 **[MULTI_USER.md](MULTI_USER.md)** - Multi-user support & session isolation
 🔧 **[RUNNING_IN_BACKGROUND.md](RUNNING_IN_BACKGROUND.md)** - Background service details
