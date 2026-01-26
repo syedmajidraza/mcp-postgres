@@ -36,40 +36,28 @@ echo "2️⃣  Starting VS Code + Copilot Bridge (port 9001)..."
 if lsof -i :9001 > /dev/null 2>&1; then
     echo "   ⚠️  Copilot Bridge already running"
 else
-    echo "   Opening VS Code workspace (will be minimized)..."
-    open -a "Visual Studio Code" "$SCRIPT_DIR"
+    echo "   Starting VS Code HIDDEN in background..."
+
+    # Start VS Code hidden using -j flag (opens hidden) and -g flag (background)
+    open -j -g -a "Visual Studio Code" "$SCRIPT_DIR"
 
     echo "   Waiting for VS Code to load (10 seconds)..."
     sleep 10
 
-    # Hide VS Code completely
-    echo "   Hiding VS Code window..."
+    # Ensure VS Code stays hidden
     osascript <<EOF 2>/dev/null
--- First minimize all windows
-tell application "Visual Studio Code"
-    set miniaturized of every window to true
-end tell
-
--- Then hide the application completely
+-- Hide VS Code completely
 tell application "System Events"
     tell process "Code"
         set visible to false
     end tell
 end tell
-
--- Also try hiding via System Events with full name
 tell application "System Events"
     tell process "Visual Studio Code"
         set visible to false
     end tell
 end tell
-
--- Activate another app to ensure VS Code loses focus
-tell application "Finder" to activate
 EOF
-
-    # Give focus back to terminal
-    osascript -e 'tell application "Terminal" to activate' 2>/dev/null || true
 
     echo "   Waiting for Copilot Bridge extension (5 seconds)..."
     sleep 5
