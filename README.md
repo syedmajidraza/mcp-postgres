@@ -29,6 +29,8 @@ This will:
 
 ## Features
 
+![PostgreSQL AI Assistant Interface](docs/screenshot-ui.png)
+
 | Feature | Description |
 |---------|-------------|
 | **Natural Language Queries** | Ask questions in plain English |
@@ -36,6 +38,7 @@ This will:
 | **Real-time Status** | Shows connection status and model info |
 | **Table Visualization** | Results displayed in formatted tables |
 | **SQL Transparency** | View generated SQL queries |
+| **Quick Actions** | Pre-built buttons for common queries |
 
 ---
 
