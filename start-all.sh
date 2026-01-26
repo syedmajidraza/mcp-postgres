@@ -42,18 +42,34 @@ else
     echo "   Waiting for VS Code to load (10 seconds)..."
     sleep 10
 
-    # Minimize VS Code window
-    echo "   Minimizing VS Code window..."
+    # Hide VS Code completely
+    echo "   Hiding VS Code window..."
     osascript <<EOF 2>/dev/null
+-- First minimize all windows
 tell application "Visual Studio Code"
     set miniaturized of every window to true
 end tell
+
+-- Then hide the application completely
+tell application "System Events"
+    tell process "Code"
+        set visible to false
+    end tell
+end tell
+
+-- Also try hiding via System Events with full name
 tell application "System Events"
     tell process "Visual Studio Code"
         set visible to false
     end tell
 end tell
+
+-- Activate another app to ensure VS Code loses focus
+tell application "Finder" to activate
 EOF
+
+    # Give focus back to terminal
+    osascript -e 'tell application "Terminal" to activate' 2>/dev/null || true
 
     echo "   Waiting for Copilot Bridge extension (5 seconds)..."
     sleep 5
@@ -125,10 +141,10 @@ if [[ "$MCP_STATUS" == *"Running"* ]] && [[ "$COPILOT_STATUS" == *"Running"* ]] 
     sleep 1
     open http://localhost:9000
     echo ""
-    echo "💡 VS Code is running minimized in the Dock"
-    echo "   • You can keep it minimized - it works in background"
-    echo "   • Un-minimize from Dock if needed"
-    echo "   • Don't close VS Code or the AI chat will stop working"
+    echo "💡 VS Code is running HIDDEN in the background"
+    echo "   • VS Code is invisible but running"
+    echo "   • Click VS Code in Dock to show if needed"
+    echo "   • DO NOT QUIT VS Code or the AI chat will stop working"
     echo ""
     echo "🛑 To stop all services: ./stop-all.sh"
     echo ""
