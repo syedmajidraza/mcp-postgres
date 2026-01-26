@@ -171,13 +171,19 @@ curl http://localhost:3000/health
 
 ```
 mcp-postgres/
-├── index.html              # Web chatbot interface
-├── web-server.js           # Node.js web server
+├── index.html              # Web chatbot UI
+├── web-server.js           # Node.js web server (port 9000)
 ├── start-all.sh            # Start all services
 ├── stop-all.sh             # Stop all services
-├── copilot-web-bridge/     # VS Code extension
+├── README.md               # Documentation
+├── SETUP.md                # Setup guide
+├── LICENSE                 # License file
+├── docs/                   # Screenshots
+│   ├── screenshot-ui.png   # Hero image
+│   └── feature.png         # Features image
+├── copilot-web-bridge/     # VS Code extension (port 9001)
 │   └── src/extension.ts    # Extension code
-└── mcp-server/             # PostgreSQL MCP Server
+└── mcp-server/             # PostgreSQL MCP Server (port 3000)
     ├── server.py           # HTTP server
     └── .env                # Database config
 ```
