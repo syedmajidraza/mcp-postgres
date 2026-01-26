@@ -29,7 +29,7 @@ This will:
 
 ## Features
 
-![PostgreSQL AI Assistant Interface](docs/screenshot-features.png)
+![PostgreSQL AI Assistant Interface](docs/feature.png)
 
 | Feature | Description |
 |---------|-------------|
