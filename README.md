@@ -2,6 +2,10 @@
 
 Query your PostgreSQL database using natural language through a web interface powered by GitHub Copilot.
 
+![PostgreSQL AI Assistant](docs/screenshot-ui.png)
+
+*Web interface showing VS Code Copilot Bridge connection with GPT-4 model*
+
 ---
 
 ## 🚀 Quick Start

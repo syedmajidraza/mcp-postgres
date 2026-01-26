@@ -42,20 +42,50 @@ const server = http.createServer(async (req, res) => {
 
     // Health check
     if (req.url === '/health' && req.method === 'GET') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ status: 'healthy' }));
+        try {
+            const mcpHealth = await fetch(`${MCP_SERVER_URL}/health`).then(r => r.json()).catch(() => null);
+            const copilotHealth = await fetch(`${COPILOT_BRIDGE_URL}/health`).then(r => r.json()).catch(() => null);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                status: 'healthy',
+                mcpServer: mcpHealth,
+                copilotBridge: copilotHealth
+            }));
+        } catch (error) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'healthy' }));
+        }
         return;
     }
 
     // Agent info endpoint
     if (req.url === '/agent/info' && req.method === 'GET') {
-        const mcpHealth = await fetch(`${MCP_SERVER_URL}/health`).then(r => r.json()).catch(() => null);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            agentUrl: 'localhost:9000',
-            mcpServerUrl: MCP_SERVER_URL,
-            database: mcpHealth?.config || {}
-        }));
+        try {
+            const mcpHealth = await fetch(`${MCP_SERVER_URL}/health`).then(r => r.json()).catch(() => null);
+            const copilotHealth = await fetch(`${COPILOT_BRIDGE_URL}/health`).then(r => r.json()).catch(() => null);
+
+            // Get tools list from MCP server
+            const toolsList = await fetch(`${MCP_SERVER_URL}/mcp/v1/tools/list`).then(r => r.json()).catch(() => ({ tools: [] }));
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                agentUrl: 'localhost:9000',
+                mcpServerUrl: MCP_SERVER_URL,
+                copilotBridgeUrl: COPILOT_BRIDGE_URL,
+                database: mcpHealth?.config || {},
+                copilot: {
+                    connected: copilotHealth?.status === 'ok',
+                    enabled: copilotHealth?.copilotEnabled || false,
+                    mode: copilotHealth?.mode || 'vscode-extension',
+                    model: 'GPT-4 (GitHub Copilot)'
+                },
+                availableTools: toolsList.tools || []
+            }));
+        } catch (error) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: error.message }));
+        }
         return;
     }
 

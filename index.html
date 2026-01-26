@@ -287,15 +287,22 @@
                     <div class="status-dot" id="statusDot"></div>
                     <span id="statusText">Connecting...</span>
                 </div>
-                <div class="status-indicator">
-                    <span>🔌 Agent: <strong id="agentUrl">localhost:8080</strong></span>
+                <div class="status-indicator" id="copilotStatus" style="background: #f0f0f0; padding: 4px 10px; border-radius: 12px;">
+                    <span id="copilotIcon">🤖</span>
+                    <span id="copilotText">Copilot: Checking...</span>
                 </div>
                 <div class="status-indicator">
-                    <span>🗄️ Database: <strong id="dbName">-</strong></span>
+                    <span>🗄️ <strong id="dbName">-</strong></span>
                 </div>
             </div>
-            <div class="status-indicator">
-                <span id="toolCount">0 tools available</span>
+            <div class="status-right" style="display: flex; gap: 15px; align-items: center;">
+                <div class="status-indicator" id="modelBadge" style="background: linear-gradient(135deg, #6e40c9 0%, #8957e5 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                    <span>🧠</span>
+                    <span id="modelName">GPT-4 (GitHub Copilot)</span>
+                </div>
+                <div class="status-indicator">
+                    <span id="toolCount">0 tools</span>
+                </div>
             </div>
         </div>
 
@@ -358,19 +365,63 @@
                     }
                 }
 
+                // Update Copilot status from health
+                if (healthData.copilotBridge) {
+                    const copilotConnected = healthData.copilotBridge.status === 'ok';
+                    const copilotEnabled = healthData.copilotBridge.copilotEnabled;
+                    updateCopilotStatus(copilotConnected, copilotEnabled);
+                }
+
                 // Get agent info and tools
                 const infoResponse = await fetch(`${API_URL}/agent/info`);
                 const infoData = await infoResponse.json();
 
                 if (infoData.availableTools) {
                     availableTools = infoData.availableTools;
-                    document.getElementById('toolCount').textContent = `${availableTools.length} tools available`;
+                    document.getElementById('toolCount').textContent = `${availableTools.length} tools`;
+                }
+
+                // Update Copilot info
+                if (infoData.copilot) {
+                    updateCopilotStatus(infoData.copilot.connected, infoData.copilot.enabled);
+                    if (infoData.copilot.model) {
+                        document.getElementById('modelName').textContent = infoData.copilot.model;
+                    }
                 }
 
             } catch (error) {
                 document.getElementById('statusText').textContent = 'Disconnected';
                 document.getElementById('statusDot').className = 'status-dot disconnected';
+                updateCopilotStatus(false, false);
                 console.error('Status check failed:', error);
+            }
+        }
+
+        // Update Copilot connection status in UI
+        function updateCopilotStatus(connected, enabled) {
+            const copilotStatus = document.getElementById('copilotStatus');
+            const copilotIcon = document.getElementById('copilotIcon');
+            const copilotText = document.getElementById('copilotText');
+            const modelBadge = document.getElementById('modelBadge');
+
+            if (connected && enabled) {
+                copilotStatus.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                copilotStatus.style.color = 'white';
+                copilotIcon.textContent = '✓';
+                copilotText.textContent = 'VS Code Copilot Bridge';
+                modelBadge.style.background = 'linear-gradient(135deg, #6e40c9 0%, #8957e5 100%)';
+            } else if (connected) {
+                copilotStatus.style.background = '#ffc107';
+                copilotStatus.style.color = '#333';
+                copilotIcon.textContent = '⚠️';
+                copilotText.textContent = 'Copilot: Not Enabled';
+                modelBadge.style.background = '#6c757d';
+            } else {
+                copilotStatus.style.background = '#dc3545';
+                copilotStatus.style.color = 'white';
+                copilotIcon.textContent = '✗';
+                copilotText.textContent = 'Copilot: Disconnected';
+                modelBadge.style.background = '#6c757d';
             }
         }
 
