@@ -143,9 +143,9 @@ This diagram traces a single user question from the browser all the way to the d
 │  PostgreSQL AI Assistant                          │
 ├───────────────────────────────────────────────────┤
 │                                                   │
-│  Status: ● MCP Server  ● Copilot Bridge          │
+│  Status: ● MCP Server  ● Copilot Bridge           │
 │  Model: GPT-4 (GitHub Copilot)                    │
-│  Database: AdventureWorks @ localhost:5431         │
+│  Database: AdventureWorks @ localhost:5431        │
 │                                                   │
 │  ┌─────────────────────────────────────────────┐  │
 │  │                                             │  │
