@@ -86,32 +86,32 @@ This diagram traces a single user question from the browser all the way to the d
  │          │        │ :9000      │        │ :9001          │       │ (Copilot) │       │ Server │
  │          │        │            │        │                │◀──(4)─┤           │       │ :3000  │
  │          │        │            │        │                │       └───────────┘       │        │
- │          │        │            │        │                │──(5)──────────────────────▶│        │
- │          │        │            │        │                │  Fetch DB schema           │        │
+ │          │        │            │        │                │──(5)─────────────────────▶│        │
+ │          │        │            │        │                │  Fetch DB schema          │        │
  │          │        │            │        │                │◀─(6)──────────────────────┤        │
- │          │        │            │        │                │  Schema returned           │        │
- │          │        │            │        │                │                            │        │
+ │          │        │            │        │                │  Schema returned          │        │
+ │          │        │            │        │                │                           │        │
  │          │        │            │        │                │──(7)─▶┌───────────┐       │        │
  │          │        │            │        │                │       │ GPT-4     │       │        │
  │          │        │            │        │                │◀─(8)──┤ generates │       │        │
  │          │        │            │        │                │       │ SQL query │       │        │
  │          │        │            │        │                │       └───────────┘       │        │
- │          │        │            │        │                │                            │        │
- │          │        │            │        │                │──(9)──────────────────────▶│        │
- │          │        │            │        │                │  Execute SQL               │──(10)─▶│ PostgreSQL
+ │          │        │            │        │                │                           │        │
+ │          │        │            │        │                │──(9)─────────────────────▶│        │
+ │          │        │            │        │                │  Execute SQL              │──(10)─▶│ PostgreSQL
  │          │        │            │        │                │◀─(11)─────────────────────┤◀─(11)──│
- │          │        │            │        │                │  Query results             │        │
- │          │        │            │        │                │                            │        │
+ │          │        │            │        │                │  Query results            │        │
+ │          │        │            │        │                │                           │        │
  │          │        │            │        │                │──(12)▶┌───────────┐       │        │
  │          │        │            │        │                │       │ GPT-4     │       │        │
  │          │        │            │        │                │◀(13)──┤ explains  │       │        │
  │          │        │            │        │                │       │ results   │       │        │
  │          │        │            │        │                │       └───────────┘       │        │
- │          │        │            │◀─(14)──┤  JSON response │                            │        │
- │          │◀─(15)──┤            │        │                │                            │        │
- │◀─(16)────┤        │            │        │                │                            │        │
- │ Display  │        │            │        │                │                            │        │
- │ results  │        │            │        │                │                            │        │
+ │          │        │            │◀─(14)──┤  JSON response │                           │        │
+ │          │◀─(15)──┤            │        │                │                           │        │
+ │◀─(16)────┤        │            │        │                │                           │        │
+ │ Display  │        │            │        │                │                           │        │
+ │ results  │        │            │        │                │                           │        │
  └──────────┘        └────────────┘        └────────────────┘                           └────────┘
 
  Step Details:
@@ -186,15 +186,15 @@ A lightweight Node.js HTTP server that acts as a **reverse proxy** and static fi
 
 ```
                     ┌───────────────────────────────────┐
-                    │         Web Server :9000           │
+                    │         Web Server :9000          │
                     │                                   │
   GET /  ──────────▶│  Serve index.html                 │
                     │                                   │
   GET /health ─────▶│  Fetch health from :3000 + :9001  │
-                    │  Return aggregated status          │
+                    │  Return aggregated status         │
                     │                                   │
   GET /agent/info ─▶│  Fetch info from :3000 + :9001    │
-                    │  Return DB config + tools list     │
+                    │  Return DB config + tools list    │
                     │                                   │
   POST /chat ──────▶│  Proxy ──▶ :9001/chat             │
                     │                                   │
@@ -210,10 +210,10 @@ A VS Code extension that exposes GitHub Copilot's `vscode.lm` API over HTTP.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                 VS Code Extension                         │
+│                 VS Code Extension                        │
 │                                                          │
 │   ┌────────────────────────────────────────────────┐     │
-│   │              queryCopilot()                     │     │
+│   │              queryCopilot()                    │     │
 │   │                                                │     │
 │   │  1. Is this a database query?                  │     │
 │   │     └─ keyword detection (table, select, etc.) │     │
@@ -223,7 +223,7 @@ A VS Code extension that exposes GitHub Copilot's `vscode.lm` API over HTTP.
 │   │     └─ Call MCP: describe_table (each table)   │     │
 │   │                                                │     │
 │   │  3. Build prompt: schema + user question       │     │
-│   │     └─ Send to GPT-4 via vscode.lm API        │     │
+│   │     └─ Send to GPT-4 via vscode.lm API         │     │
 │   │     └─ Receive SQL query                       │     │
 │   │                                                │     │
 │   │  4. Clean SQL (remove markdown, multi-stmt)    │     │
@@ -231,7 +231,7 @@ A VS Code extension that exposes GitHub Copilot's `vscode.lm` API over HTTP.
 │   │  5. Execute SQL via MCP: query_database        │     │
 │   │                                                │     │
 │   │  6. Build explain prompt: question + results   │     │
-│   │     └─ Send to GPT-4 via vscode.lm API        │     │
+│   │     └─ Send to GPT-4 via vscode.lm API         │     │
 │   │     └─ Receive human-readable explanation      │     │
 │   │                                                │     │
 │   │  7. Return { response, sql, data, rowCount }   │     │
@@ -255,10 +255,10 @@ A Python FastAPI server implementing the **Model Context Protocol** for PostgreS
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│                    MCP Server :3000                            │
+│                    MCP Server :3000                           │
 │                                                               │
 │   ┌─────────────────────────────────────────────────────┐     │
-│   │                 FastAPI Application                   │     │
+│   │                 FastAPI Application                 │     │
 │   │                                                     │     │
 │   │  GET  /health                                       │     │
 │   │  GET  /mcp/v1/tools          → list all 8 tools     │     │
@@ -268,12 +268,12 @@ A Python FastAPI server implementing the **Model Context Protocol** for PostgreS
 │                           │                                   │
 │                           ▼                                   │
 │   ┌─────────────────────────────────────────────────────┐     │
-│   │             Tool Router                              │     │
+│   │             Tool Router                             │     │
 │   │                                                     │     │
 │   │  "query_database"        → execute_query()          │     │
 │   │  "execute_sql"           → execute_sql_statement()  │     │
 │   │  "create_table"          → create_table()           │     │
-│   │  "create_stored_procedure"→ create_stored_procedure()│     │
+│   │  "create_stored_procedure"→ create_stored_procedure()│    │
 │   │  "list_tables"           → list_tables()            │     │
 │   │  "describe_table"        → describe_table()         │     │
 │   │  "get_table_indexes"     → get_table_indexes()      │     │
@@ -282,13 +282,13 @@ A Python FastAPI server implementing the **Model Context Protocol** for PostgreS
 │                           │                                   │
 │                           ▼                                   │
 │   ┌─────────────────────────────────────────────────────┐     │
-│   │          asyncpg Connection Pool                     │     │
+│   │          asyncpg Connection Pool                    │     │
 │   │                                                     │     │
 │   │    min_size: POOL_MIN_SIZE    (from .env)           │     │
 │   │    max_size: POOL_MAX_SIZE    (from .env)           │     │
 │   │                                                     │     │
-│   │    Connections are reused across requests for        │     │
-│   │    high throughput and low latency.                  │     │
+│   │    Connections are reused across requests for       │     │
+│   │    high throughput and low latency.                 │     │
 │   └───────────────────────┬─────────────────────────────┘     │
 │                           │                                   │
 └───────────────────────────┼───────────────────────────────────┘
@@ -308,7 +308,7 @@ All configuration is loaded from the `.env` file at startup. No hardcoded defaul
 
 ```
 ┌─────────────────────────────────────────────┐
-│                .env file                     │
+│                .env file                    │
 │                                             │
 │   DB_HOST=localhost                         │
 │   DB_PORT=5431                              │
@@ -325,7 +325,7 @@ All configuration is loaded from the `.env` file at startup. No hardcoded defaul
                    │
                    ▼  load_dotenv()
 ┌──────────────────────────────────────────────┐
-│              config.py                        │
+│              config.py                       │
 │                                              │
 │  _require_env(key)                           │
 │    → reads os.getenv(key)                    │
@@ -351,19 +351,19 @@ If any required variable is missing from `.env`, the server exits immediately wi
 
 ```
 ┌────────────────────────────────────────────────────┐
-│                   localhost                         │
+│                   localhost                        │
 │                                                    │
 │   :9000  ─── Web Server (Node.js)                  │
-│              Serves UI + proxies requests           │
+│              Serves UI + proxies requests          │
 │                                                    │
 │   :9001  ─── Copilot Web Bridge (VS Code)          │
-│              AI query generation via GPT-4          │
+│              AI query generation via GPT-4         │
 │                                                    │
-│   :3000  ─── MCP Server (Python/FastAPI)            │
-│              Database operations                    │
+│   :3000  ─── MCP Server (Python/FastAPI)           │
+│              Database operations                   │
 │                                                    │
-│   :5431  ─── PostgreSQL Database                    │
-│              (configurable via .env)                │
+│   :5431  ─── PostgreSQL Database                   │
+│              (configurable via .env)               │
 │                                                    │
 └────────────────────────────────────────────────────┘
 ```
@@ -428,17 +428,17 @@ The MCP server can run in two modes:
 
 ```
 ┌──────────────────────┐          ┌──────────────────────┐
-│   HTTP Mode          │          │   Stdio Mode          │
-│   (server.py)        │          │   (stdio_server.py)   │
-│                      │          │                       │
-│  - FastAPI + Uvicorn │          │  - JSON-RPC over      │
-│  - REST endpoints    │          │    stdin/stdout        │
-│  - Used by web UI    │          │  - Used by VS Code    │
-│  - Port 3000         │          │    MCP client          │
-│  - /configure to     │          │  - No HTTP server      │
-│    change DB at      │          │  - Initialize once     │
-│    runtime           │          │    and run              │
-└──────────────────────┘          └───────────────────────┘
+│   HTTP Mode          │          │   Stdio Mode         │
+│   (server.py)        │          │   (stdio_server.py)  │
+│                      │          │                      │
+│  - FastAPI + Uvicorn │          │  - JSON-RPC over     │
+│  - REST endpoints    │          │    stdin/stdout      │
+│  - Used by web UI    │          │  - Used by VS Code   │
+│  - Port 3000         │          │    MCP client        │
+│  - /configure to     │          │  - No HTTP server    │
+│    change DB at      │          │  - Initialize once   │
+│    runtime           │          │    and run           │
+└──────────────────────┘          └──────────────────────┘
 ```
 
 **HTTP mode** is used when running the full web chatbot solution. **Stdio mode** is used for direct integration with VS Code or other tools that speak the MCP protocol over standard I/O.
@@ -449,24 +449,24 @@ The MCP server can run in two modes:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  Frontend                                                │
-│    HTML/CSS/JavaScript (vanilla, no framework)           │
+│  Frontend                                               │
+│    HTML/CSS/JavaScript (vanilla, no framework)          │
 ├─────────────────────────────────────────────────────────┤
-│  Web Server                                              │
-│    Node.js (built-in http module, no dependencies)       │
+│  Web Server                                             │
+│    Node.js (built-in http module, no dependencies)      │
 ├─────────────────────────────────────────────────────────┤
-│  AI Layer                                                │
-│    VS Code Extension (TypeScript)                        │
-│    GitHub Copilot / GPT-4 (via vscode.lm API)            │
+│  AI Layer                                               │
+│    VS Code Extension (TypeScript)                       │
+│    GitHub Copilot / GPT-4 (via vscode.lm API)           │
 ├─────────────────────────────────────────────────────────┤
-│  Database Layer                                          │
-│    Python 3.9+ / FastAPI / Uvicorn                       │
-│    asyncpg (async PostgreSQL driver)                     │
-│    python-dotenv (environment configuration)             │
+│  Database Layer                                         │
+│    Python 3.9+ / FastAPI / Uvicorn                      │
+│    asyncpg (async PostgreSQL driver)                    │
+│    python-dotenv (environment configuration)            │
 ├─────────────────────────────────────────────────────────┤
-│  Database                                                │
-│    PostgreSQL                                            │
-└─────────────────────────────────────────────────────────┘
+│  Database                                               │
+│    PostgreSQL                                           │
+└────────────────────────────────────────────────────── ──┘
 ```
 
 ---
