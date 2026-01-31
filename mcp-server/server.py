@@ -1,14 +1,12 @@
 """
-FastAPI-based MCP Server for PostgreSQL
-Provides tools for database operations through the Model Context Protocol
+FastAPI-based MCP Server for PostgreSQL (Read-Only)
+Provides read-only tools for database operations through the Model Context Protocol
 """
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from pydantic import BaseModel
+from typing import Dict, Any, Optional
 import asyncpg
-import json
 import uvicorn
 from contextlib import asynccontextmanager
 from config import Config
@@ -66,7 +64,7 @@ async def lifespan(app: FastAPI):
         await db_pool.close()
         print("Database connection pool closed")
 
-app = FastAPI(title="PostgreSQL MCP Server", lifespan=lifespan)
+app = FastAPI(title="PostgreSQL MCP Server (Read-Only)", lifespan=lifespan)
 
 # Middleware to log incoming requests in debug mode
 @app.middleware("http")
@@ -97,73 +95,6 @@ async def list_tools():
             }
         ),
         Tool(
-            name="execute_sql",
-            description="Execute a SQL statement (INSERT, UPDATE, DELETE, CREATE TABLE, etc.) on the PostgreSQL database.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "sql": {
-                        "type": "string",
-                        "description": "The SQL statement to execute"
-                    }
-                },
-                "required": ["sql"]
-            }
-        ),
-        Tool(
-            name="create_table",
-            description="Create a new table in the PostgreSQL database.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "table_name": {
-                        "type": "string",
-                        "description": "Name of the table to create"
-                    },
-                    "columns": {
-                        "type": "array",
-                        "description": "List of column definitions",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": {"type": "string"},
-                                "type": {"type": "string"},
-                                "constraints": {"type": "string"}
-                            },
-                            "required": ["name", "type"]
-                        }
-                    }
-                },
-                "required": ["table_name", "columns"]
-            }
-        ),
-        Tool(
-            name="create_stored_procedure",
-            description="Create a stored procedure or function in the PostgreSQL database.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "procedure_name": {
-                        "type": "string",
-                        "description": "Name of the stored procedure"
-                    },
-                    "parameters": {
-                        "type": "string",
-                        "description": "Procedure parameters (e.g., 'param1 INT, param2 VARCHAR(100)')"
-                    },
-                    "return_type": {
-                        "type": "string",
-                        "description": "Return type of the procedure (e.g., 'VOID', 'INT', 'TABLE(...)')"
-                    },
-                    "body": {
-                        "type": "string",
-                        "description": "The procedure body/logic in SQL"
-                    }
-                },
-                "required": ["procedure_name", "body"]
-            }
-        ),
-        Tool(
             name="list_tables",
             description="List all tables in the current database schema.",
             inputSchema={
@@ -174,20 +105,6 @@ async def list_tools():
                         "description": "Schema name (default: 'public')"
                     }
                 }
-            }
-        ),
-        Tool(
-            name="describe_table",
-            description="Get the structure/schema of a specific table including columns, types, and constraints.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "table_name": {
-                        "type": "string",
-                        "description": "Name of the table to describe"
-                    }
-                },
-                "required": ["table_name"]
             }
         ),
         Tool(
@@ -224,7 +141,7 @@ async def list_tools():
 
 @app.post("/mcp/v1/tools/call")
 async def call_tool(request: ToolCallRequest):
-    """Execute an MCP tool"""
+    """Execute an MCP tool (read-only operations only)"""
     if not db_pool:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
@@ -236,32 +153,8 @@ async def call_tool(request: ToolCallRequest):
             result = await execute_query(request.arguments.get("query"))
             return {"result": result}
 
-        elif request.name == "execute_sql":
-            result = await execute_sql_statement(request.arguments.get("sql"))
-            return {"result": result}
-
-        elif request.name == "create_table":
-            result = await create_table(
-                request.arguments.get("table_name"),
-                request.arguments.get("columns")
-            )
-            return {"result": result}
-
-        elif request.name == "create_stored_procedure":
-            result = await create_stored_procedure(
-                request.arguments.get("procedure_name"),
-                request.arguments.get("parameters", ""),
-                request.arguments.get("return_type", "VOID"),
-                request.arguments.get("body")
-            )
-            return {"result": result}
-
         elif request.name == "list_tables":
             result = await list_tables(request.arguments.get("schema", "public"))
-            return {"result": result}
-
-        elif request.name == "describe_table":
-            result = await describe_table(request.arguments.get("table_name"))
             return {"result": result}
 
         elif request.name == "get_table_indexes":
@@ -295,77 +188,6 @@ async def execute_query(query: str) -> Dict[str, Any]:
             "row_count": len(result)
         }
 
-async def execute_sql_statement(sql: str) -> Dict[str, Any]:
-    """Execute a SQL statement (INSERT, UPDATE, DELETE, CREATE, etc.)"""
-    async with db_pool.acquire() as conn:
-        try:
-            status = await conn.execute(sql)
-            return {
-                "status": "success",
-                "message": f"Statement executed: {status}"
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
-
-async def create_table(table_name: str, columns: List[Dict[str, str]]) -> Dict[str, Any]:
-    """Create a new table"""
-    column_defs = []
-    for col in columns:
-        col_def = f"{col['name']} {col['type']}"
-        if col.get('constraints'):
-            col_def += f" {col['constraints']}"
-        column_defs.append(col_def)
-
-    sql = f"CREATE TABLE {table_name} ({', '.join(column_defs)})"
-
-    async with db_pool.acquire() as conn:
-        try:
-            await conn.execute(sql)
-            return {
-                "status": "success",
-                "message": f"Table '{table_name}' created successfully",
-                "sql": sql
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
-
-async def create_stored_procedure(
-    procedure_name: str,
-    parameters: str,
-    return_type: str,
-    body: str
-) -> Dict[str, Any]:
-    """Create a stored procedure or function"""
-    param_str = f"({parameters})" if parameters else "()"
-
-    sql = f"""
-    CREATE OR REPLACE FUNCTION {procedure_name}{param_str}
-    RETURNS {return_type}
-    AS $$
-    {body}
-    $$ LANGUAGE plpgsql;
-    """
-
-    async with db_pool.acquire() as conn:
-        try:
-            await conn.execute(sql)
-            return {
-                "status": "success",
-                "message": f"Stored procedure '{procedure_name}' created successfully",
-                "sql": sql
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
-
 async def list_tables(schema: str) -> Dict[str, Any]:
     """List all tables in the schema"""
     query = """
@@ -383,30 +205,6 @@ async def list_tables(schema: str) -> Dict[str, Any]:
             "schema": schema,
             "tables": tables,
             "count": len(tables)
-        }
-
-async def describe_table(table_name: str) -> Dict[str, Any]:
-    """Get table structure"""
-    query = """
-    SELECT
-        column_name,
-        data_type,
-        character_maximum_length,
-        is_nullable,
-        column_default
-    FROM information_schema.columns
-    WHERE table_name = $1
-    ORDER BY ordinal_position
-    """
-
-    async with db_pool.acquire() as conn:
-        rows = await conn.fetch(query, table_name)
-        columns = [dict(row) for row in rows]
-
-        return {
-            "table_name": table_name,
-            "columns": columns,
-            "column_count": len(columns)
         }
 
 async def get_table_indexes(table_name: str) -> Dict[str, Any]:
@@ -449,34 +247,6 @@ async def analyze_query_plan(query: str) -> Dict[str, Any]:
                 "plan": result,
                 "note": "Plan generated without execution (ANALYZE failed)"
             }
-
-# Configuration endpoint
-@app.post("/configure")
-async def configure_database(config: DatabaseConfig):
-    """Update database configuration"""
-    global db_config, db_pool
-
-    # Close existing pool
-    if db_pool:
-        await db_pool.close()
-
-    # Update config
-    db_config = config
-
-    # Create new pool
-    try:
-        db_pool = await asyncpg.create_pool(
-            host=db_config.host,
-            port=db_config.port,
-            database=db_config.database,
-            user=db_config.user,
-            password=db_config.password,
-            min_size=Config.POOL_MIN_SIZE,
-            max_size=Config.POOL_MAX_SIZE
-        )
-        return {"status": "success", "message": "Database configuration updated"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 @app.get("/health")
 async def health_check():

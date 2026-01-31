@@ -50,11 +50,11 @@ This solution lets users query a PostgreSQL database using **natural language** 
 │  │ 1. Receive user msg  │ │    │     POST /configure         → Update config  │
 │  │ 2. Fetch DB schema   │─┼───▶│                                              │
 │  │    from MCP Server   │ │    │   Tools:                                     │
-│  │ 3. Build SQL prompt  │ │    │     query_database    list_tables            │
-│  │ 4. Call GPT-4 via    │ │    │     execute_sql       describe_table         │
-│  │    vscode.lm API     │ │    │     create_table      get_table_indexes      │
-│  │ 5. Execute SQL via   │─┼───▶│     create_stored_procedure                  │
-│  │    MCP Server        │ │    │     analyze_query_plan                       │
+│  │ 3. Build SQL prompt  │ │    │     query_database (read-only)               │
+│  │ 4. Call GPT-4 via    │ │    │     list_tables                              │
+│  │    vscode.lm API     │ │    │     get_table_indexes                        │
+│  │ 5. Execute SQL via   │─┼───▶│     analyze_query_plan                       │
+│  │    MCP Server        │ │    │                                              │
 │  │ 6. Explain results   │ │    │                                              │
 │  │    with GPT-4        │ │    │   ┌──────────────────────────────────────┐   │
 │  │ 7. Return response   │ │    │   │  asyncpg Connection Pool             │   │
@@ -118,8 +118,8 @@ This diagram traces a single user question from the browser all the way to the d
   (1)  Browser sends POST /chat { message: "Show me all employees..." }
   (2)  Web Server proxies request to Copilot Bridge at localhost:9001/chat
   (3)  Extension receives message, detects it's a database query
-  (5)  Extension calls MCP Server: list_tables + describe_table for each table
-  (6)  MCP Server returns full database schema
+  (5)  Extension calls MCP Server: list_tables to get available tables
+  (6)  MCP Server returns table listing
   (7)  Extension builds prompt with schema + user question, sends to GPT-4
   (8)  GPT-4 returns: SELECT * FROM employees WHERE salary > 70000 LIMIT 100
   (9)  Extension calls MCP Server: query_database with the generated SQL
@@ -251,33 +251,28 @@ A VS Code extension that exposes GitHub Copilot's `vscode.lm` API over HTTP.
 
 ### 4. MCP Server (`server.py` — Port 3000)
 
-A Python FastAPI server implementing the **Model Context Protocol** for PostgreSQL database operations.
+A Python FastAPI server implementing the **Model Context Protocol** for read-only PostgreSQL database operations.
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│                    MCP Server :3000                           │
+│                MCP Server :3000 (Read-Only)                    │
 │                                                               │
 │   ┌─────────────────────────────────────────────────────┐     │
 │   │                 FastAPI Application                 │     │
 │   │                                                     │     │
 │   │  GET  /health                                       │     │
-│   │  GET  /mcp/v1/tools          → list all 8 tools     │     │
+│   │  GET  /mcp/v1/tools          → list all 4 tools     │     │
 │   │  POST /mcp/v1/tools/call     → execute a tool       │     │
-│   │  POST /configure             → update DB config     │     │
 │   └───────────────────────┬─────────────────────────────┘     │
 │                           │                                   │
 │                           ▼                                   │
 │   ┌─────────────────────────────────────────────────────┐     │
-│   │             Tool Router                             │     │
+│   │             Tool Router (read-only)                 │     │
 │   │                                                     │     │
-│   │  "query_database"        → execute_query()          │     │
-│   │  "execute_sql"           → execute_sql_statement()  │     │
-│   │  "create_table"          → create_table()           │     │
-│   │  "create_stored_procedure"→ create_stored_procedure()│    │
-│   │  "list_tables"           → list_tables()            │     │
-│   │  "describe_table"        → describe_table()         │     │
-│   │  "get_table_indexes"     → get_table_indexes()      │     │
-│   │  "analyze_query_plan"    → analyze_query_plan()     │     │
+│   │  "query_database"     → execute_query()             │     │
+│   │  "list_tables"        → list_tables()               │     │
+│   │  "get_table_indexes"  → get_table_indexes()         │     │
+│   │  "analyze_query_plan" → analyze_query_plan()        │     │
 │   └───────────────────────┬─────────────────────────────┘     │
 │                           │                                   │
 │                           ▼                                   │
@@ -407,16 +402,12 @@ stop-all.sh
 
 ---
 
-## MCP Tools Reference
+## MCP Tools Reference (Read-Only)
 
 | Tool | Input | Output | Description |
 |------|-------|--------|-------------|
 | `query_database` | `{ query: string }` | `{ rows, row_count }` | Execute SELECT queries |
-| `execute_sql` | `{ sql: string }` | `{ status, message }` | Run INSERT/UPDATE/DELETE/DDL |
-| `create_table` | `{ table_name, columns[] }` | `{ status, sql }` | Create a new table |
-| `create_stored_procedure` | `{ procedure_name, parameters?, return_type?, body }` | `{ status, sql }` | Create a PL/pgSQL function |
 | `list_tables` | `{ schema?: string }` | `{ schema, tables[], count }` | List tables in schema |
-| `describe_table` | `{ table_name: string }` | `{ table_name, columns[] }` | Get column details |
 | `get_table_indexes` | `{ table_name: string }` | `{ table_name, indexes[] }` | List indexes on a table |
 | `analyze_query_plan` | `{ query: string }` | `{ query, plan }` | EXPLAIN a query (JSON format) |
 
@@ -435,9 +426,8 @@ The MCP server can run in two modes:
 │  - REST endpoints    │          │    stdin/stdout      │
 │  - Used by web UI    │          │  - Used by VS Code   │
 │  - Port 3000         │          │    MCP client        │
-│  - /configure to     │          │  - No HTTP server    │
-│    change DB at      │          │  - Initialize once   │
-│    runtime           │          │    and run           │
+│  - Read-only tools   │          │  - No HTTP server    │
+│                      │          │  - Read-only tools   │
 └──────────────────────┘          └──────────────────────┘
 ```
 
@@ -466,7 +456,7 @@ The MCP server can run in two modes:
 ├─────────────────────────────────────────────────────────┤
 │  Database                                               │
 │    PostgreSQL                                           │
-└────────────────────────────────────────────────────── ──┘
+└──────────────────────────────────────────────────────-──┘
 ```
 
 ---
@@ -476,6 +466,7 @@ The MCP server can run in two modes:
 | Aspect | Implementation |
 |--------|----------------|
 | **Network binding** | All services bind to `127.0.0.1` — not accessible from other machines |
+| **Read-only MCP** | MCP server only exposes read operations — no CREATE, INSERT, UPDATE, or DELETE tools |
 | **SQL safety** | Copilot Bridge strips multi-statement SQL, only first statement is executed |
 | **No auth on HTTP** | Services trust localhost; do not expose ports to the internet |
 | **Credentials** | Database password stored in `.env` (git-ignored), never hardcoded |

@@ -1,5 +1,5 @@
 """
-Stdio-based MCP Server for PostgreSQL
+Stdio-based MCP Server for PostgreSQL (Read-Only)
 Compatible with GitHub Copilot in VS Code
 """
 
@@ -10,7 +10,7 @@ import asyncpg
 import logging
 from decimal import Decimal
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from config import Config
 
 # Configure logging to stderr (stdout is used for MCP protocol)
@@ -103,22 +103,6 @@ async def query_database(query: str) -> Dict[str, Any]:
         return {"error": str(e)}
 
 
-async def execute_sql(sql: str) -> Dict[str, Any]:
-    """Execute a SQL statement (INSERT, UPDATE, DELETE, CREATE TABLE, etc.)"""
-    try:
-        async with db_pool.acquire() as conn:
-            result = await conn.execute(sql)
-            return {
-                "result": {
-                    "message": "SQL executed successfully",
-                    "status": result
-                }
-            }
-    except Exception as e:
-        logger.error(f"Execute error: {e}")
-        return {"error": str(e)}
-
-
 async def list_tables(schema: str = "public") -> Dict[str, Any]:
     """List all tables in the current database schema"""
     try:
@@ -140,34 +124,6 @@ async def list_tables(schema: str = "public") -> Dict[str, Any]:
             }
     except Exception as e:
         logger.error(f"List tables error: {e}")
-        return {"error": str(e)}
-
-
-async def describe_table(table_name: str) -> Dict[str, Any]:
-    """Get the structure/schema of a specific table"""
-    try:
-        query = """
-            SELECT
-                column_name,
-                data_type,
-                character_maximum_length,
-                is_nullable,
-                column_default
-            FROM information_schema.columns
-            WHERE table_name = $1
-            ORDER BY ordinal_position
-        """
-        async with db_pool.acquire() as conn:
-            rows = await conn.fetch(query, table_name)
-            columns = [convert_postgres_types(dict(row)) for row in rows]
-            return {
-                "result": {
-                    "table_name": table_name,
-                    "columns": columns
-                }
-            }
-    except Exception as e:
-        logger.error(f"Describe table error: {e}")
         return {"error": str(e)}
 
 
@@ -212,31 +168,6 @@ async def analyze_query_plan(query: str) -> Dict[str, Any]:
         return {"error": str(e)}
 
 
-async def create_table(table_name: str, columns: List[Dict[str, str]]) -> Dict[str, Any]:
-    """Create a new table in the PostgreSQL database"""
-    try:
-        column_defs = []
-        for col in columns:
-            col_def = f"{col['name']} {col['type']}"
-            if col.get('constraints'):
-                col_def += f" {col['constraints']}"
-            column_defs.append(col_def)
-
-        create_sql = f"CREATE TABLE {table_name} ({', '.join(column_defs)})"
-
-        async with db_pool.acquire() as conn:
-            await conn.execute(create_sql)
-            return {
-                "result": {
-                    "message": f"Table '{table_name}' created successfully",
-                    "sql": create_sql
-                }
-            }
-    except Exception as e:
-        logger.error(f"Create table error: {e}")
-        return {"error": str(e)}
-
-
 # MCP Protocol Implementation
 
 TOOLS = [
@@ -255,20 +186,6 @@ TOOLS = [
         }
     },
     {
-        "name": "execute_sql",
-        "description": "Execute a SQL statement (INSERT, UPDATE, DELETE, CREATE TABLE, etc.) on the PostgreSQL database.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "sql": {
-                    "type": "string",
-                    "description": "The SQL statement to execute"
-                }
-            },
-            "required": ["sql"]
-        }
-    },
-    {
         "name": "list_tables",
         "description": "List all tables in the current database schema.",
         "inputSchema": {
@@ -279,20 +196,6 @@ TOOLS = [
                     "description": "Schema name (default: 'public')"
                 }
             }
-        }
-    },
-    {
-        "name": "describe_table",
-        "description": "Get the structure/schema of a specific table including columns, types, and constraints.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "table_name": {
-                    "type": "string",
-                    "description": "Name of the table to describe"
-                }
-            },
-            "required": ["table_name"]
         }
     },
     {
@@ -321,33 +224,6 @@ TOOLS = [
                 }
             },
             "required": ["query"]
-        }
-    },
-    {
-        "name": "create_table",
-        "description": "Create a new table in the PostgreSQL database.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "table_name": {
-                    "type": "string",
-                    "description": "Name of the table to create"
-                },
-                "columns": {
-                    "type": "array",
-                    "description": "List of column definitions",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "type": {"type": "string"},
-                            "constraints": {"type": "string"}
-                        },
-                        "required": ["name", "type"]
-                    }
-                }
-            },
-            "required": ["table_name", "columns"]
         }
     }
 ]
@@ -383,21 +259,15 @@ async def handle_request(request: Dict[str, Any]) -> Dict[str, Any]:
 
         logger.info(f"Calling tool: {tool_name} with arguments: {arguments}")
 
-        # Route to appropriate tool
+        # Route to appropriate tool (read-only)
         if tool_name == "query_database":
             result = await query_database(arguments.get("query"))
-        elif tool_name == "execute_sql":
-            result = await execute_sql(arguments.get("sql"))
         elif tool_name == "list_tables":
             result = await list_tables(arguments.get("schema", "public"))
-        elif tool_name == "describe_table":
-            result = await describe_table(arguments.get("table_name"))
         elif tool_name == "get_table_indexes":
             result = await get_table_indexes(arguments.get("table_name"))
         elif tool_name == "analyze_query_plan":
             result = await analyze_query_plan(arguments.get("query"))
-        elif tool_name == "create_table":
-            result = await create_table(arguments.get("table_name"), arguments.get("columns", []))
         else:
             result = {"error": f"Unknown tool: {tool_name}"}
 
@@ -416,7 +286,7 @@ async def handle_request(request: Dict[str, Any]) -> Dict[str, Any]:
 
 async def main():
     """Main stdio loop"""
-    logger.info("Starting PostgreSQL MCP Server (stdio mode)")
+    logger.info("Starting PostgreSQL MCP Server (stdio mode, read-only)")
 
     # Initialize database
     if not await init_db():
