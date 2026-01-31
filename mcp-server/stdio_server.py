@@ -53,8 +53,8 @@ async def init_db():
             database=db_config.database,
             user=db_config.user,
             password=db_config.password,
-            min_size=2,
-            max_size=10
+            min_size=Config.POOL_MIN_SIZE,
+            max_size=Config.POOL_MAX_SIZE
         )
         logger.info(f"✅ Connected to PostgreSQL database: {db_config.database}")
         return True

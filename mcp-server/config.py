@@ -1,30 +1,43 @@
 """
 Configuration management for PostgreSQL MCP Server
+All values are read from .env file - no hardcoded defaults.
 """
 
 import os
+import sys
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
+
+def _require_env(key: str) -> str:
+    """Get a required environment variable or exit with an error."""
+    value = os.getenv(key)
+    if value is None:
+        print(f"Error: Required environment variable '{key}' is not set. "
+              f"Please add it to your .env file.", file=sys.stderr)
+        sys.exit(1)
+    return value
+
+
 class Config:
-    """Database and server configuration"""
+    """Database and server configuration - all values from .env"""
 
     # Database settings
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = int(os.getenv('DB_PORT', '5431'))
-    DB_NAME = os.getenv('DB_NAME', 'AdventureWorks')
-    DB_USER = os.getenv('DB_USER', 'postgres')
+    DB_HOST = _require_env('DB_HOST')
+    DB_PORT = int(_require_env('DB_PORT'))
+    DB_NAME = _require_env('DB_NAME')
+    DB_USER = _require_env('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '')
 
     # Server settings
-    SERVER_HOST = os.getenv('SERVER_HOST', '127.0.0.1')
-    SERVER_PORT = int(os.getenv('SERVER_PORT', '3000'))
+    SERVER_HOST = _require_env('SERVER_HOST')
+    SERVER_PORT = int(_require_env('SERVER_PORT'))
 
     # Connection pool settings
-    POOL_MIN_SIZE = int(os.getenv('POOL_MIN_SIZE', '2'))
-    POOL_MAX_SIZE = int(os.getenv('POOL_MAX_SIZE', '10'))
+    POOL_MIN_SIZE = int(_require_env('POOL_MIN_SIZE'))
+    POOL_MAX_SIZE = int(_require_env('POOL_MAX_SIZE'))
 
     @classmethod
     def get_database_url(cls) -> str:

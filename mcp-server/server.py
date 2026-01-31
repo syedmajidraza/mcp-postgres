@@ -51,8 +51,8 @@ async def lifespan(app: FastAPI):
             database=db_config.database,
             user=db_config.user,
             password=db_config.password,
-            min_size=2,
-            max_size=10
+            min_size=Config.POOL_MIN_SIZE,
+            max_size=Config.POOL_MAX_SIZE
         )
         print(f"✅ Connected to PostgreSQL database: {db_config.database}")
     except Exception as e:
@@ -471,8 +471,8 @@ async def configure_database(config: DatabaseConfig):
             database=db_config.database,
             user=db_config.user,
             password=db_config.password,
-            min_size=2,
-            max_size=10
+            min_size=Config.POOL_MIN_SIZE,
+            max_size=Config.POOL_MAX_SIZE
         )
         return {"status": "success", "message": "Database configuration updated"}
     except Exception as e:
@@ -493,4 +493,4 @@ async def health_check():
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=3000)
+    uvicorn.run(app, host=Config.SERVER_HOST, port=Config.SERVER_PORT)
