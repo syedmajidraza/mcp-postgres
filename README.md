@@ -10,8 +10,14 @@ Query your PostgreSQL database using natural language through a web interface po
 
 ## 🚀 Quick Start
 
+**macOS / Linux:**
 ```bash
 ./start-all.sh
+```
+
+**Windows:**
+```batch
+start-all.bat
 ```
 
 This will:
@@ -21,8 +27,15 @@ This will:
 4. Open chatbot in your browser at http://localhost:9000
 
 **To stop all services:**
+
+macOS / Linux:
 ```bash
 ./stop-all.sh
+```
+
+Windows:
+```batch
+stop-all.bat
 ```
 
 ---
@@ -73,15 +86,20 @@ This will:
 
 ## Installation
 
+### macOS / Linux
+
 1. **Install Python dependencies:**
    ```bash
-   pip3 install fastapi uvicorn asyncpg python-dotenv
+   cd mcp-server
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
    ```
 
 2. **Configure database:**
    ```bash
-   # Edit mcp-server/.env with your database credentials
-   nano mcp-server/.env
+   cp .env.example .env
+   nano mcp-server/.env   # Edit with your database credentials
    ```
 
 3. **Install VS Code extension:**
@@ -92,6 +110,32 @@ This will:
 4. **Start:**
    ```bash
    ./start-all.sh
+   ```
+
+### Windows
+
+1. **Install Python dependencies:**
+   ```batch
+   cd mcp-server
+   python -m venv venv
+   venv\Scripts\activate.bat
+   pip install -r requirements.txt
+   ```
+
+2. **Configure database:**
+   ```batch
+   copy .env.example .env
+   notepad mcp-server\.env   &REM Edit with your database credentials
+   ```
+
+3. **Install VS Code extension:**
+   ```batch
+   code --install-extension copilot-web-bridge\copilot-web-bridge-1.0.0.vsix
+   ```
+
+4. **Start:**
+   ```batch
+   start-all.bat
    ```
 
 ---
@@ -160,10 +204,17 @@ curl http://localhost:3000/health
 **VS Code Copilot Bridge disconnected?**
 - Make sure VS Code is running (can be minimized)
 - Check GitHub Copilot is signed in
+- Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS) and run "Copilot Web Bridge: Start Server"
 
 **Database errors?**
 - Verify `mcp-server/.env` has correct credentials
 - Check PostgreSQL is running
+
+**Windows-specific issues?**
+- Make sure `python` and `node` are in your system PATH
+- Make sure `curl` is available (included in Windows 10+)
+- Run `start-all.bat` from Command Prompt (not PowerShell) for best compatibility
+- Check logs at `%TEMP%\mcp-server.log` and `%TEMP%\web-server.log`
 
 ---
 
@@ -173,8 +224,10 @@ curl http://localhost:3000/health
 mcp-postgres/
 ├── index.html              # Web chatbot UI
 ├── web-server.js           # Node.js web server (port 9000)
-├── start-all.sh            # Start all services
-├── stop-all.sh             # Stop all services
+├── start-all.sh            # Start all services (macOS/Linux)
+├── stop-all.sh             # Stop all services (macOS/Linux)
+├── start-all.bat           # Start all services (Windows)
+├── stop-all.bat            # Stop all services (Windows)
 ├── README.md               # Documentation
 ├── SETUP.md                # Setup guide
 ├── LICENSE                 # License file

@@ -25,23 +25,47 @@ localhost:9000  Middleware          Natural Language        Tools      Database
 
 ### Step 1: Install PostgreSQL MCP Server Dependencies
 
+**macOS / Linux:**
 ```bash
 cd mcp-server
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install fastapi uvicorn asyncpg python-dotenv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Windows:**
+```batch
+cd mcp-server
+python -m venv venv
+venv\Scripts\activate.bat
+pip install -r requirements.txt
 ```
 
 ### Step 2: Configure Database Connection
 
-Edit `mcp-server/config.py`:
+Create your `.env` file from the example template:
 
-```python
-DB_HOST = "localhost"
-DB_PORT = 5431
-DB_NAME = "Adventureworks"  # Your database name
-DB_USER = "postgres"        # Your username
-DB_PASSWORD = "postgres"    # Your password
+**macOS / Linux:**
+```bash
+cd mcp-server
+cp .env.example .env
+nano .env
+```
+
+**Windows:**
+```batch
+cd mcp-server
+copy .env.example .env
+notepad .env
+```
+
+Update the values in `.env` with your database credentials:
+```
+DB_HOST=localhost
+DB_PORT=5431
+DB_NAME=Adventureworks
+DB_USER=postgres
+DB_PASSWORD=postgres
 ```
 
 ### Step 3: Install VS Code Extension
@@ -62,39 +86,76 @@ Open VS Code Settings (`Cmd+,` or `Ctrl+,`) and search for "Copilot Web Bridge":
 
 ## Running the Application
 
-### Start MCP Server
+### Option A: Start All Services at Once
 
+**macOS / Linux:**
+```bash
+./start-all.sh
+```
+
+**Windows:**
+```batch
+start-all.bat
+```
+
+This starts everything automatically and opens the chatbot in your browser.
+
+### Option B: Start Services Individually
+
+#### Start MCP Server
+
+**macOS / Linux:**
 ```bash
 cd mcp-server
+source venv/bin/activate
 python3 server.py
+```
+
+**Windows:**
+```batch
+cd mcp-server
+venv\Scripts\activate.bat
+python server.py
 ```
 
 You should see:
 ```
-✅ Connected to PostgreSQL database: Adventureworks
+Connected to PostgreSQL database: Adventureworks
 INFO:     Uvicorn running on http://0.0.0.0:3000
 ```
 
-### Start VS Code Extension
+#### Start VS Code Extension
 
 1. **Open VS Code**
-2. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
+2. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
 3. Type: `Developer: Reload Window`
 4. Wait for extension to auto-start (if `autoStart: true`)
 
 **OR manually start:**
 
-1. Press `Cmd+Shift+P`
+1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
 2. Type: `Copilot Web Bridge: Start Server`
 3. You'll see: **"Copilot Web Bridge started on http://localhost:9000"**
 
-### Open Web Chatbot
+#### Start Web Server
 
 ```bash
-open index.html
+node web-server.js
 ```
 
-Or navigate to: `file:///Users/syedraza/postgres-mcp/index.html`
+#### Open Web Chatbot
+
+**macOS:**
+```bash
+open http://localhost:9000
+```
+
+**Windows:**
+```batch
+start http://localhost:9000
+```
+
+Or navigate to `http://localhost:9000` in your browser.
 
 ---
 
@@ -154,7 +215,7 @@ Expected output:
 ### Check Extension Status
 
 In VS Code:
-- Press `Cmd+Shift+P`
+- Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
 - Type: `Copilot Web Bridge: Show Status`
 - Should show: "running on port 9000"
 
@@ -184,8 +245,10 @@ In VS Code:
 **Problem:** MCP server not running or database error
 **Solution:**
 1. Check MCP server is running: `curl http://localhost:3000/health`
-2. Check database connection in `config.py`
-3. View MCP server logs: `tail -f /tmp/mcp-server.log`
+2. Check database connection in `mcp-server/.env`
+3. View MCP server logs:
+   - macOS/Linux: `tail -f /tmp/mcp-server.log`
+   - Windows: `type %TEMP%\mcp-server.log`
 4. Restart MCP server
 
 ### Database connection failed
@@ -193,7 +256,7 @@ In VS Code:
 **Problem:** Cannot connect to PostgreSQL
 **Solution:**
 1. Verify PostgreSQL is running
-2. Check connection details in `config.py`
+2. Check connection details in `mcp-server/.env`
 3. Test connection: `psql -h localhost -p 5431 -U postgres -d Adventureworks`
 
 ---
@@ -259,16 +322,36 @@ const response = await model.sendRequest(messages, {}, token);
 
 ## Stopping Services
 
-### Stop MCP Server
+### Stop All Services at Once
 
+**macOS / Linux:**
+```bash
+./stop-all.sh
+```
+
+**Windows:**
+```batch
+stop-all.bat
+```
+
+### Stop Services Individually
+
+**Stop MCP Server:**
+
+macOS / Linux:
 ```bash
 pkill -f "python3 server.py"
 ```
 
-### Stop VS Code Extension
+Windows:
+```batch
+taskkill /F /IM python.exe
+```
+
+**Stop VS Code Extension:**
 
 In VS Code:
-- Press `Cmd+Shift+P`
+- Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
 - Type: `Copilot Web Bridge: Stop Server`
 
 ---
@@ -277,7 +360,9 @@ In VS Code:
 
 For issues or questions:
 1. Check extension output: View → Output → "Copilot Web Bridge"
-2. Check MCP server logs: `tail -f /tmp/mcp-server.log`
+2. Check MCP server logs:
+   - macOS/Linux: `tail -f /tmp/mcp-server.log`
+   - Windows: `type %TEMP%\mcp-server.log`
 3. Review this guide's Troubleshooting section
 
 ---
